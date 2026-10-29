@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* Palette prise sur l'affiche et le logo du BDE : noir, os, sang, braise. */
+:root {
+  --bg: #000000;
+  --surface: #110d0b;
+  --ink: #efe7da;
+  --muted: #b3a999;
+  --blood: #b3100d;
+  --blood-deep: #5c0605;
+  --ember: #ff9a00;
+  --accent-ink: #ffffff;
+
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+  --step-display: clamp(3.25rem, 11vw, 11rem);
+
+  --margin: clamp(16px, 2.5vw, 32px);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-blood: var(--blood);
+  --color-blood-deep: var(--blood-deep);
+  --color-ember: var(--ember);
+  --font-display: var(--font-zodiak);
+  --font-sans: var(--font-hanken);
+}
+
+html { background: var(--bg); color-scheme: dark; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  font-size: var(--step-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: var(--font-zodiak), Georgia, serif; letter-spacing: -0.01em; line-height: 1; }
+.wrap { padding-inline: var(--margin); }
+
+::selection { background: var(--blood); color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+
+/* Bouton unique du site : rectangle plein, coins droits. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  background: var(--blood); color: var(--accent-ink); font-weight: 500;
+  padding: .85em 1.4em; border-radius: 0; text-decoration: none;
+  transition: background-color .2s, transform .15s;
+}
+.btn:hover { background: #d4140f; }
+.btn:active { transform: scale(.97); }
+
+/* Traitement unique des photos de masques : bichromie sang (fond blanc -> rouge). */
+.duo { background: var(--blood); }
+.duo img { filter: grayscale(1) contrast(1.35); mix-blend-mode: multiply; }
+.duo[data-vrai="true"] { background: #fff; }
+.duo[data-vrai="true"] img { filter: none; mix-blend-mode: normal; }
+
+/* Grain de pellicule : texture fixe, aucun redessin par image. */
+.grain { position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Néon qui grésille : moins de 3 éclats par seconde (WCAG 2.3.1). */
+@keyframes gresille {
+  0%, 100% { opacity: 1; }
+  8% { opacity: .35; } 10% { opacity: 1; }
+  52% { opacity: .55; } 55% { opacity: 1; }
+}
+.gresille { animation: gresille 4.5s steps(1, end) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gresille { animation: none; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
+}
