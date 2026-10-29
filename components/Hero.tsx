@@ -5,15 +5,13 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, waLien } from "@/lib/masques";
+import SangGL from "@/components/hero/SangGL";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const DEPART = 6; // masque N°07
 const PAS = 7;
-// [position en %, largeur en px, longueur en svh] : 8 coulures irrégulières.
-const GOUTTES: [number, number, number][] = [
-  [6, 10, 9], [17, 6, 16], [29, 14, 7], [44, 8, 21], [58, 12, 11], [71, 6, 18], [83, 16, 8], [94, 9, 14],
-]; // 7 et 23 premiers entre eux : on passe par les 23 masques dans un ordre mélangé
+// 7 et 23 premiers entre eux : on passe par les 23 masques dans un ordre mélangé
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -38,26 +36,6 @@ export default function Hero() {
           .from(".h-suite", { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, "-=0.5");
         // Boucles infinies, mises en pause quand le hero sort de l'écran.
         const boucles: gsap.core.Animation[] = [];
-        // Le sang coule depuis le haut, puis continue de suinter (la longueur respire).
-        gsap.utils.toArray<HTMLElement>(".h-goutte").forEach((g, k) => {
-          boucles.push(gsap.timeline({ delay: 0.3 + k * 0.18 })
-            .from(g, { scaleY: 0, transformOrigin: "50% 0%", duration: gsap.utils.random(1.5, 3), ease: "power1.in" })
-            .to(g, { scaleY: gsap.utils.random(1.15, 1.45), duration: gsap.utils.random(3, 6), ease: "sine.inOut", yoyo: true, repeat: -1 }));
-        });
-        // De temps en temps une goutte se détache d'une coulure au hasard et tombe.
-        const coulures = gsap.utils.toArray<HTMLElement>(".h-goutte");
-        gsap.utils.toArray<HTMLElement>(".h-chute").forEach((c, k) => {
-          boucles.push(gsap.timeline({ delay: 3 + k * 1.7, repeat: -1, repeatDelay: 1.5 + k * 1.3 })
-            .call(() => {
-              const g = coulures[Math.floor(Math.random() * coulures.length)];
-              const r = g.getBoundingClientRect();
-              const base = g.parentElement!.getBoundingClientRect();
-              gsap.set(c, { left: r.left - base.left + r.width / 2 - 5, top: r.bottom - base.top - 8, y: 0, scale: 0.4, autoAlpha: 1 });
-            })
-            .to(c, { scale: 1, duration: 0.6, ease: "sine.in" })
-            .to(c, { y: () => window.innerHeight * 0.55, scaleY: 1.4, duration: 1.1, ease: "power2.in" })
-            .to(c, { autoAlpha: 0, duration: 0.2 }, "-=0.2"));
-        });
         // Le visage géant respire très lentement.
         boucles.push(gsap.fromTo(".h-spectre img", { scale: 1.08 }, { scale: 1, duration: 8, ease: "sine.inOut", repeat: -1, yoyo: true }));
         ScrollTrigger.create({
@@ -102,26 +80,8 @@ export default function Hero() {
         style={{ /* taste-skill-ignore: lampe torche */ background: "radial-gradient(circle 32vmax at var(--x, 50%) var(--y, 40%), rgba(179,16,13,.22), transparent 70%)" }}
       />
 
-      {/* Sang qui suinte du bord haut : bande, coulures et gouttes fondues ensemble par un filtre « goo ». */}
-      <svg aria-hidden="true" width="0" height="0" className="absolute">
-        <filter id="sang-goo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="flou" />
-          <feColorMatrix in="flou" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" />
-        </filter>
-      </svg>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[70svh]" style={{ filter: "url(#sang-goo)" }}>
-        <span className="absolute inset-x-0 top-0 block h-3 bg-blood" />
-        {GOUTTES.map(([gauche, largeur, haut], k) => (
-          <span
-            key={k}
-            className="h-goutte absolute top-0 block rounded-b-full bg-blood"
-            style={{ left: `${gauche}%`, width: largeur, height: `${haut}svh` }}
-          />
-        ))}
-        {[0, 1, 2].map((k) => (
-          <span key={k} className="h-chute invisible absolute block h-[10px] w-[10px] rounded-full bg-blood" />
-        ))}
-      </div>
+      {/* Sang qui suinte du bord haut (WebGL). */}
+      <SangGL />
       <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[1] block h-1 bg-blood-deep" />
 
       {/* Le visage choisi, en géant, au-dessus du titre : il occupe l'espace libre, jamais le texte. */}
