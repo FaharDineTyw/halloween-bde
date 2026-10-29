@@ -59,7 +59,7 @@ body {
 .btn:active { transform: scale(.97); }
 
 /* Traitement unique des photos de masques : bichromie sang (fond blanc -> rouge). */
-.duo { background: var(--blood); }
+.duo { background: var(--blood); isolation: isolate; }
 .duo img { filter: grayscale(1) contrast(1.35); mix-blend-mode: multiply; }
 .duo[data-vrai="true"] { background: #fff; }
 .duo[data-vrai="true"] img { filter: none; mix-blend-mode: normal; }

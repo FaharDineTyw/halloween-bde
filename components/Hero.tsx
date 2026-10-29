@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, waLien } from "@/lib/masques";
 
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const DEPART = 6; // masque N°07
 const PAS = 7;
@@ -35,16 +36,18 @@ export default function Hero() {
           .from(".h-fente", { clipPath: "inset(0 100% 0 0)", duration: 1.1, ease: "power4.inOut" }, "-=0.4")
           .from(".h-fente img", { scale: 1.12, duration: 1.1 }, "<")
           .from(".h-suite", { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, "-=0.5");
+        // Boucles infinies, mises en pause quand le hero sort de l'écran.
+        const boucles: gsap.core.Animation[] = [];
         // Le sang coule depuis le haut, puis continue de suinter (la longueur respire).
         gsap.utils.toArray<HTMLElement>(".h-goutte").forEach((g, k) => {
-          gsap.timeline({ delay: 0.3 + k * 0.18 })
+          boucles.push(gsap.timeline({ delay: 0.3 + k * 0.18 })
             .from(g, { scaleY: 0, transformOrigin: "50% 0%", duration: gsap.utils.random(1.5, 3), ease: "power1.in" })
-            .to(g, { scaleY: gsap.utils.random(1.15, 1.45), duration: gsap.utils.random(3, 6), ease: "sine.inOut", yoyo: true, repeat: -1 });
+            .to(g, { scaleY: gsap.utils.random(1.15, 1.45), duration: gsap.utils.random(3, 6), ease: "sine.inOut", yoyo: true, repeat: -1 }));
         });
         // De temps en temps une goutte se détache d'une coulure au hasard et tombe.
         const coulures = gsap.utils.toArray<HTMLElement>(".h-goutte");
         gsap.utils.toArray<HTMLElement>(".h-chute").forEach((c, k) => {
-          gsap.timeline({ delay: 3 + k * 1.7, repeat: -1, repeatDelay: 1.5 + k * 1.3 })
+          boucles.push(gsap.timeline({ delay: 3 + k * 1.7, repeat: -1, repeatDelay: 1.5 + k * 1.3 })
             .call(() => {
               const g = coulures[Math.floor(Math.random() * coulures.length)];
               const r = g.getBoundingClientRect();
@@ -53,10 +56,14 @@ export default function Hero() {
             })
             .to(c, { scale: 1, duration: 0.6, ease: "sine.in" })
             .to(c, { y: () => window.innerHeight * 0.55, scaleY: 1.4, duration: 1.1, ease: "power2.in" })
-            .to(c, { autoAlpha: 0, duration: 0.2 }, "-=0.2");
+            .to(c, { autoAlpha: 0, duration: 0.2 }, "-=0.2"));
         });
         // Le visage géant respire très lentement.
-        gsap.fromTo(".h-spectre img", { scale: 1.08 }, { scale: 1, duration: 8, ease: "sine.inOut", repeat: -1, yoyo: true });
+        boucles.push(gsap.fromTo(".h-spectre img", { scale: 1.08 }, { scale: 1, duration: 8, ease: "sine.inOut", repeat: -1, yoyo: true }));
+        ScrollTrigger.create({
+          trigger: root.current, start: "top bottom", end: "bottom top",
+          onToggle: (st) => boucles.forEach((b) => (st.isActive ? b.resume() : b.pause())),
+        });
       });
       mm.add("(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)", () => {
         const el = lampe.current!;
@@ -102,7 +109,7 @@ export default function Hero() {
           <feColorMatrix in="flou" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" />
         </filter>
       </svg>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[1]" style={{ filter: "url(#sang-goo)" }}>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-[70svh]" style={{ filter: "url(#sang-goo)" }}>
         <span className="absolute inset-x-0 top-0 block h-3 bg-blood" />
         {GOUTTES.map(([gauche, largeur, haut], k) => (
           <span

@@ -96,6 +96,8 @@ export default function Ambiance() {
     };
 
     const frame = (now: number) => {
+      // Téléphones : ~30 images/s suffisent.
+      if (!reduit && W < 640 && now - last < 32) { raf = requestAnimationFrame(frame); return; }
       const dt = Math.min((now - last) / 16.67 || 1, 3);
       last = now; t = now;
       ctx.clearRect(0, 0, W, H);
@@ -164,12 +166,16 @@ export default function Ambiance() {
       ptr.x = x; ptr.y = y; ptr.actif = true;
       if (traces.length < 18) traces.push({ x, y, life: 1 });
     };
-    const onPointer = (e: PointerEvent) => bouge(e.clientX, e.clientY);
+    const onPointer = (e: PointerEvent) => { if (e.pointerType === "mouse") bouge(e.clientX, e.clientY); };
     const onTouch = (e: TouchEvent) => { const p = e.touches[0]; if (p) bouge(p.clientX, p.clientY); };
     const onLeave = () => { ptr.actif = false; };
 
     let tm: ReturnType<typeof setTimeout>;
-    const onResize = () => { clearTimeout(tm); tm = setTimeout(() => { taille(); if (reduit) frameStatique(); }, 200); };
+    const onResize = () => { clearTimeout(tm); tm = setTimeout(() => {
+      // La barre d'adresse mobile change seulement la hauteur : on ne régénère pas la scène.
+      if (window.innerWidth === W && Math.abs(window.innerHeight - H) < 160) return;
+      taille(); if (reduit) frameStatique();
+    }, 200); };
 
     const frameStatique = () => {
       // une seule image : particules et fantômes immobiles
@@ -194,7 +200,8 @@ export default function Ambiance() {
       window.addEventListener("pointermove", onPointer, { passive: true });
       window.addEventListener("touchmove", onTouch, { passive: true });
       window.addEventListener("touchstart", onTouch, { passive: true });
-      document.addEventListener("pointerleave", onLeave);
+      document.documentElement.addEventListener("pointerleave", onLeave);
+      window.addEventListener("touchend", onLeave, { passive: true });
       document.addEventListener("visibilitychange", onVisible);
       raf = requestAnimationFrame((n) => { last = n; frame(n); });
     }
@@ -206,7 +213,8 @@ export default function Ambiance() {
       window.removeEventListener("pointermove", onPointer);
       window.removeEventListener("touchmove", onTouch);
       window.removeEventListener("touchstart", onTouch);
-      document.removeEventListener("pointerleave", onLeave);
+      document.documentElement.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("touchend", onLeave);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);

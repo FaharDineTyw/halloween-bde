@@ -22,16 +22,24 @@ export default function Catalogue() {
 
   // Entrée du titre, une seule fois.
   useGSAP(() => {
-    gsap.from("[data-entree]", {
-      y: 28, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.08,
-      scrollTrigger: { trigger: scope.current, start: "top 75%", once: true },
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.from("[data-entree]", {
+        y: 28, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.08,
+        scrollTrigger: { trigger: scope.current, start: "top 75%", once: true },
+      });
     });
   }, { scope });
 
   // Les lignes visibles réapparaissent quand le filtre change.
   useGSAP(() => {
-    if (filtre === "tous") return;
-    gsap.fromTo("li[data-num]:not([hidden])", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.03, ease: "power2.out" });
+    // La hauteur de la page change : recaler tous les déclencheurs (sinon ceux plus bas ne partent jamais).
+    const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
+    if (filtre !== "tous") {
+      gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo("li[data-num]:not([hidden])", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.03, ease: "power2.out" });
+      });
+    }
+    return () => cancelAnimationFrame(raf);
   }, { scope, dependencies: [filtre] });
 
   // Lampe torche : la lumière suit le pointeur sur l'aperçu.

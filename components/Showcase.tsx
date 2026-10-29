@@ -18,7 +18,9 @@ export default function Showcase() {
   useGSAP(
     (_, contextSafe) => {
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      // Revient et relit la position de repos à chaque changement de point de rupture (lg).
+      mm.add({ lg: "(min-width: 1024px)", ok: "(prefers-reduced-motion: no-preference)" }, ({ conditions }) => {
+        if (!conditions?.ok) return;
         const cartes = gsap.utils.toArray<HTMLElement>(".sc-carte");
         // Position de repos lue depuis le CSS (différente téléphone / bureau).
         const base = cartes.map((c) => ({ rotation: gsap.getProperty(c, "rotation") as number, x: gsap.getProperty(c, "x") as number }));

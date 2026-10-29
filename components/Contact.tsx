@@ -13,9 +13,15 @@ export default function Contact() {
 
   // Le numéro monte depuis sous sa ligne de base à l'entrée.
   useGSAP(() => {
-    gsap.from("[data-numero]", {
-      yPercent: 100, duration: 1.1, ease: "power4.out",
-      scrollTrigger: { trigger: scope.current, start: "top 60%", once: true },
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+      gsap.from("[data-numero]", {
+        yPercent: 100, duration: 1.1, ease: "power4.out",
+        scrollTrigger: {
+          trigger: scope.current, start: "top 90%", once: true,
+          // Si la page a raccourci et que le départ est déjà dépassé, montrer le numéro tout de suite.
+          onRefresh: (self) => { if (self.progress > 0) self.animation?.progress(1); },
+        },
+      });
     });
   }, { scope });
 
@@ -35,7 +41,7 @@ export default function Contact() {
           target="_blank"
           rel="noopener"
           aria-label={`Écrire au BDE sur WhatsApp au ${WHATSAPP_AFFICHE}`}
-          className="block whitespace-nowrap text-[clamp(40px,13vw,240px)] tracking-[-0.03em] text-black transition-colors hover:text-ink md:text-[11.2vw]"
+          className="block whitespace-nowrap text-[clamp(32px,11.5vw,240px)] tracking-[-0.03em] text-ink transition-colors hover:text-black md:text-[11.2vw]"
         >
           <span data-numero className="inline-block">{WHATSAPP_AFFICHE}</span>
         </a>

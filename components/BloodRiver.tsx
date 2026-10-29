@@ -79,6 +79,8 @@ export default function BloodRiver() {
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const longueurs = chemins.map((p) => p.getTotalLength());
+        // Table de points calculée une fois : pas de getPointAtLength à chaque image de défilement.
+        const table = chemins.map((c, k) => Array.from({ length: 257 }, (_, j) => c.getPointAtLength((j / 256) * longueurs[k])));
         const montrees = TACHES.map(() => false);
         gsap.set(taches, { scale: 0, transformOrigin: "50% 50%" });
         const montre = contextSafe!((k: number, oui: boolean) => {
@@ -96,8 +98,8 @@ export default function BloodRiver() {
             onUpdate: () => {
               // La goutte de tête suit la pointe de chaque filet.
               const p = Math.max(0.005, t ? t.progress() : 0);
-              chemins.forEach((c, k) => {
-                const pt = c.getPointAtLength(p * longueurs[k]);
+              chemins.forEach((_c, k) => {
+                const pt = table[k][Math.round(p * 256)];
                 tetes[k].setAttribute("cx", String(pt.x));
                 tetes[k].setAttribute("cy", String(pt.y));
               });
@@ -113,6 +115,8 @@ export default function BloodRiver() {
         // La goutte de tête palpite doucement.
         gsap.to(tetes, { scale: 1.35, transformOrigin: "50% 50%", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.4 });
       });
+      // La hauteur de page a changé (filtre, polices, images) : on recale tous les déclencheurs.
+      ScrollTrigger.refresh();
     },
     { scope: root, dependencies: [w, h, m], revertOnUpdate: true },
   );
