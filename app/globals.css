@@ -85,5 +85,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .gresille { animation: none; }
-  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
+  /* Mouvement réduit = plus doux, pas zéro : on garde les fondus courts, on coupe le déplacement. */
+  *, *::before, *::after { transition-duration: 150ms !important; transition-property: opacity, color, background-color !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
 }

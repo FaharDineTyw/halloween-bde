@@ -19,7 +19,9 @@ export default function Showcase() {
     (_, contextSafe) => {
       const mm = gsap.matchMedia();
       // Revient et relit la position de repos à chaque changement de point de rupture (lg).
-      mm.add({ lg: "(min-width: 1024px)", ok: "(prefers-reduced-motion: no-preference)" }, ({ conditions }) => {
+      mm.add({ lg: "(min-width: 1024px)", ok: "(prefers-reduced-motion: no-preference)" }, (mc) => {
+        const { conditions } = mc;
+        const sur = <A extends unknown[]>(f: (...a: A) => void) => (...a: A) => { mc.add(() => f(...a)); };
         if (!conditions?.ok) return;
         const cartes = gsap.utils.toArray<HTMLElement>(".sc-carte");
         // Position de repos lue depuis le CSS (différente téléphone / bureau).
@@ -34,7 +36,7 @@ export default function Showcase() {
           .from(".sc-legende", { y: 16, autoAlpha: 0, duration: 0.6 }, "<0.3");
 
         let ouvert = false;
-        const ecarter = contextSafe!((oui: boolean) => {
+        const ecarter = sur((oui: boolean) => {
           ouvert = oui;
           cartes.forEach((c, i) => {
             const s = i === 0 ? -1 : 1;

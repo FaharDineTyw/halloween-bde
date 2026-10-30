@@ -65,8 +65,8 @@ export default function Hero() {
     () => {
       if (premier.current) { premier.current = false; return; }
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      gsap.fromTo(".h-fente, .h-spectre", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "power4.inOut", stagger: 0.08 });
-      gsap.fromTo(".h-fente img", { scale: 1.12 }, { scale: 1, duration: 0.6, ease: "power3.out" });
+      gsap.fromTo(".h-fente, .h-spectre", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.38, ease: "expo.out", stagger: 0.06 });
+      gsap.fromTo(".h-fente img", { scale: 1.08 }, { scale: 1, duration: 0.38, ease: "expo.out" });
     },
     { scope: root, dependencies: [i] },
   );

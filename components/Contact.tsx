@@ -24,7 +24,8 @@ export default function Contact() {
 
   useGSAP((_ctx, contextSafe) => {
     const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add("(prefers-reduced-motion: no-preference)", (mc) => {
+      const sur = <A extends unknown[]>(f: (...a: A) => void) => (...a: A) => { mc.add(() => f(...a)); };
       // Entrée : titre, étapes puis vitrine, une seule fois.
       gsap.from("[data-entree]", {
         y: 28, autoAlpha: 0, duration: 0.9, ease: "power3.out", stagger: 0.09,
@@ -35,9 +36,9 @@ export default function Contact() {
       });
 
       // La vitrine change de masque toutes les 2,8 s, en fondu, seulement quand la section est visible.
-      const suivant = contextSafe!(() => {
+      const suivant = sur(() => {
         gsap.to(".vt-img", {
-          autoAlpha: 0, scale: 1.04, duration: 0.45, ease: "power2.in",
+          autoAlpha: 0, scale: 1.03, filter: "blur(4px)", duration: 0.25, ease: "power3.out",
           onComplete: () => setI((k) => (k + 1) % VITRINE.length),
         });
       });
@@ -52,7 +53,7 @@ export default function Contact() {
 
   // À chaque nouveau masque : réapparition douce.
   useGSAP(() => {
-    gsap.fromTo(".vt-img", { autoAlpha: 0, scale: 1.04 }, { autoAlpha: 1, scale: 1, duration: 0.7, ease: "power3.out" });
+    gsap.fromTo(".vt-img", { autoAlpha: 0, scale: 1.03, filter: "blur(4px)" }, { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out", clearProps: "filter" });
   }, { scope, dependencies: [i] });
 
   return (
@@ -84,10 +85,10 @@ export default function Contact() {
         {/* Vitrine : un masque à la fois, en vraies couleurs */}
         <figure data-entree className="mx-auto w-full max-w-[420px] lg:col-span-5 lg:col-start-8 lg:max-w-none">
           <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="group block">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-[#0d0a09]">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-[#0d0a09] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] group-hover:scale-[1.02]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={m.img} alt={m.nom} width={480} height={600} loading="lazy"
-                className="vt-img h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                className="vt-img h-full w-full object-cover"
                 style={{ filter: "brightness(.92) contrast(1.05)" }} />
               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px]" style={{ boxShadow: "inset 0 0 80px 18px rgba(0,0,0,.55)" }} />
             </div>

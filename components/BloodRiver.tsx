@@ -88,16 +88,19 @@ export default function BloodRiver() {
         gsap.set(marques, { scale: 1, transformOrigin: "50% 50%" });
       });
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add("(prefers-reduced-motion: no-preference)", (mc) => {
+        const sur = <A extends unknown[]>(f: (...a: A) => void) => (...a: A) => { mc.add(() => f(...a)); };
+        // Rappels enveloppés par le contexte de matchMedia, pas par celui de useGSAP (sinon les deux
+        // contextes se contiennent l'un l'autre et GSAP boucle à l'infini au recalcul).
         const longueurs = chemins.map((p) => p.getTotalLength());
         // Table de points calculée une fois : pas de getPointAtLength à chaque image de défilement.
         const table = chemins.map((c, k) => Array.from({ length: 257 }, (_, j) => c.getPointAtLength((j / 256) * longueurs[k])));
         const pointes = chemins.map(() => ({ x: 0, y: 0 }));
         const montrees = seuils.map(() => false);
-        gsap.set(marques, { scale: 0, transformOrigin: "50% 50%" });
+        gsap.set(marques, { scale: 0.3, autoAlpha: 0, transformOrigin: "50% 50%" });
         gsap.set(chutes, { autoAlpha: 0 });
-        const montre = contextSafe!((k: number, oui: boolean) => {
-          gsap.to(marques[k], { scale: oui ? 1 : 0, duration: oui ? 0.5 : 0.25, ease: oui ? "back.out(2.5)" : "power2.in" });
+        const montre = sur((k: number, oui: boolean) => {
+          gsap.to(marques[k], { scale: oui ? 1 : 0.3, autoAlpha: oui ? 1 : 0, duration: oui ? 0.5 : 0.2, ease: oui ? "back.out(2.5)" : "power3.out" });
         });
 
         // Part tracée : jusqu'à 65 % de l'écran courant, lissée.
@@ -117,16 +120,19 @@ export default function BloodRiver() {
           });
         };
         applique();
+        // On garde la référence du lissage et on le remplace nous-mêmes : `overwrite: true` parcourt
+        // toutes les animations en cours à chaque événement de défilement (débordement de pile).
+        let lisse: gsap.core.Tween | null = null;
         ScrollTrigger.create({
           trigger: document.documentElement, start: "top top", end: "bottom bottom",
-          onUpdate: () => gsap.to(etat, { p: cible(), duration: 0.6, ease: "power2.out", overwrite: true, onUpdate: applique }),
+          onUpdate: () => { lisse?.kill(); lisse = gsap.to(etat, { p: cible(), duration: 0.6, ease: "power2.out", onUpdate: applique }); },
         });
 
         // La larme de tête gonfle doucement.
         gsap.to(gouttes, { scaleY: 1.25, scaleX: 1.1, transformOrigin: "50% 0%", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.4 });
 
         // De temps en temps, une goutte se détache de la pointe et glisse avant de s'effacer.
-        const detache = contextSafe!((k: number) => {
+        const detache = sur((k: number) => {
           const g = chutes[k];
           const { x, y } = pointes[k];
           gsap.timeline({ onComplete: () => { gsap.delayedCall(gsap.utils.random(1.5, 4), detache, [k]); } })

@@ -26,7 +26,7 @@ export default function Catalogue() {
   // Soulignement qui glisse sous le filtre actif.
   const placeBarre = (bouton: HTMLElement | null, anime = true) => {
     if (!bouton || !barre.current) return;
-    gsap.to(barre.current, { x: bouton.offsetLeft, width: bouton.offsetWidth, duration: anime && !calme() ? 0.45 : 0, ease: "power3.out" });
+    gsap.to(barre.current, { x: bouton.offsetLeft, width: bouton.offsetWidth, duration: anime && !calme() ? 0.28 : 0, ease: "power3.out" });
   };
 
   const { contextSafe } = useGSAP(
@@ -58,15 +58,21 @@ export default function Catalogue() {
     const etat = Flip.getState(cartes);
     // ponytail: hidden posé directement sur le DOM (React ne gère pas cet attribut ici) pour que Flip mesure avant/après.
     cartes.forEach((c) => { c.hidden = id !== "tous" && c.dataset.style !== id; });
-    const fin = () => ScrollTrigger.refresh();
+    // Fin du filtre : toute carte visible doit être pleinement affichée (même si son entrée au défilement est déjà passée).
+    const fin = () => {
+      gsap.to(cartes.filter((c) => !c.hidden), { autoAlpha: 1, y: 0, scale: 1, duration: 0.2, ease: "power3.out" });
+      ScrollTrigger.refresh();
+    };
     if (calme()) { gsap.set(cartes, { autoAlpha: 1, y: 0 }); fin(); return; }
     Flip.from(etat, {
-      duration: 0.6,
-      ease: "power3.inOut",
+      duration: 0.42,
+      ease: "power4.inOut",
       absolute: true,
       stagger: 0.02,
-      onEnter: (els) => gsap.fromTo(els, { autoAlpha: 0, scale: 0.92 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }),
-      onLeave: (els) => gsap.to(els, { autoAlpha: 0, scale: 0.92, duration: 0.3, ease: "power2.in" }),
+      // Les tweens d'entrée/sortie ne sont pas renvoyés à Flip : renvoyés, ils finissaient imbriqués
+      // dans le contexte React et dans la timeline de Flip à la fois (boucle infinie, catalogue cassé).
+      onEnter: (els) => { gsap.fromTo(els, { autoAlpha: 0, scale: 0.95 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.35, ease: "power3.out" }); },
+      onLeave: (els) => { gsap.to(els, { autoAlpha: 0, scale: 0.95, duration: 0.18, ease: "power3.out" }); },
       onComplete: fin,
     });
   });
@@ -132,7 +138,7 @@ export default function Catalogue() {
                 width={480}
                 height={480}
                 loading={i < 4 ? "eager" : "lazy"}
-                className="h-full w-full object-cover brightness-[.92] contrast-[1.05] transition-transform duration-[600ms] ease-[cubic-bezier(.22,1,.36,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
+                className="h-full w-full object-cover brightness-[.92] contrast-[1.05] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
               />
               {/* Vignette douce : évite l'éblouissement des fonds blancs */}
               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px] shadow-[inset_0_0_48px_14px_rgba(13,10,9,.55)]" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
@@ -149,7 +155,7 @@ export default function Catalogue() {
                 target="_blank"
                 rel="noopener"
                 aria-label={`Réserver le masque N°${x.num}, ${x.nom}, sur WhatsApp`}
-                className="self-start sm:self-auto shrink-0 touch-manipulation bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[15px] text-ember transition-[background-size] duration-300 hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
+                className="self-start sm:self-auto shrink-0 touch-manipulation bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[15px] text-ember transition-[background-size] duration-200 ease-out hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
               >
                 Réserver
               </a>
