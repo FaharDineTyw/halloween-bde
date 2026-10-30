@@ -33,12 +33,19 @@ function filet(x: number, h: number, s: number, ampl: number) {
 
 // [côté, décalage depuis le bord en part de la marge, épaisseur, graine]
 const FILETS: ["g" | "d", number, number, number][] = [
-  ["g", 0.45, 6, 11],
-  ["g", 0.8, 2.5, 29],
-  ["d", 0.5, 5, 47],
+  ["g", 0.42, 6, 11],
+  ["g", 0.75, 3, 29],
+  ["d", 0.5, 5.5, 47],
 ];
 // Éclaboussures : [filet, position verticale en part de la page]
 const TACHES: [number, number][] = [[0, 0.22], [2, 0.41], [1, 0.63], [2, 0.86]];
+// Perles le long des filets : [filet, position verticale en part de la page]
+const PERLES: [number, number][] = [[0, 0.09], [2, 0.16], [0, 0.34], [1, 0.47], [2, 0.55], [0, 0.71], [2, 0.74], [1, 0.92]];
+// Pointe du filet à 65 % de la hauteur d'écran : toujours visible pendant le défilement.
+const POINTE = 0.65;
+
+// Goutte en larme, pointe vers le haut (rattachée au filet), centre du rond en 0,0.
+const larme = (r: number) => `M0 ${-r * 2.2} C${r * 0.35} ${-r * 1.2} ${r} ${-r * 0.6} ${r} 0 A${r} ${r} 0 0 1 ${-r} 0 C${-r} ${-r * 0.6} ${-r * 0.35} ${-r * 1.2} 0 ${-r * 2.2}Z`;
 
 export default function BloodRiver() {
   const root = useRef<HTMLDivElement>(null);
@@ -66,54 +73,68 @@ export default function BloodRiver() {
   useGSAP(
     (_ctx, contextSafe) => {
       if (!h) return;
+      const couches = gsap.utils.toArray<SVGPathElement>(".br-couche", root.current);
       const chemins = gsap.utils.toArray<SVGPathElement>(".br-filet", root.current);
-      const tetes = gsap.utils.toArray<SVGCircleElement>(".br-tete", root.current);
-      const taches = gsap.utils.toArray<SVGGElement>(".br-tache", root.current);
+      const tetes = gsap.utils.toArray<SVGGElement>(".br-tete", root.current);
+      const gouttes = gsap.utils.toArray<SVGPathElement>(".br-larme", root.current);
+      const chutes = gsap.utils.toArray<SVGCircleElement>(".br-chute", root.current);
+      const marques = gsap.utils.toArray<SVGElement>(".br-tache, .br-perle", root.current);
+      const seuils = [...TACHES, ...PERLES].map(([, y]) => y);
       const mm = gsap.matchMedia();
 
       mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(chemins, { drawSVG: "100%" });
-        gsap.set(tetes, { autoAlpha: 0 });
-        gsap.set(taches, { scale: 1, transformOrigin: "50% 50%" });
+        gsap.set(couches, { drawSVG: "100%" });
+        gsap.set([...tetes, ...chutes], { autoAlpha: 0 });
+        gsap.set(marques, { scale: 1, transformOrigin: "50% 50%" });
       });
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const longueurs = chemins.map((p) => p.getTotalLength());
         // Table de points calculée une fois : pas de getPointAtLength à chaque image de défilement.
         const table = chemins.map((c, k) => Array.from({ length: 257 }, (_, j) => c.getPointAtLength((j / 256) * longueurs[k])));
-        const montrees = TACHES.map(() => false);
-        gsap.set(taches, { scale: 0, transformOrigin: "50% 50%" });
+        const pointes = chemins.map(() => ({ x: 0, y: 0 }));
+        const montrees = seuils.map(() => false);
+        gsap.set(marques, { scale: 0, transformOrigin: "50% 50%" });
+        gsap.set(chutes, { autoAlpha: 0 });
         const montre = contextSafe!((k: number, oui: boolean) => {
-          gsap.to(taches[k], { scale: oui ? 1 : 0, duration: oui ? 0.5 : 0.25, ease: oui ? "back.out(2.5)" : "power2.in" });
+          gsap.to(marques[k], { scale: oui ? 1 : 0, duration: oui ? 0.5 : 0.25, ease: oui ? "back.out(2.5)" : "power2.in" });
         });
 
-        let t: gsap.core.Tween | null = null;
-        t = gsap.fromTo(
-          chemins,
-          { drawSVG: "0% 0.5%" },
-          {
-            drawSVG: "0% 100%",
-            ease: "none",
-            scrollTrigger: { trigger: document.documentElement, start: "top top", end: "bottom bottom", scrub: 0.6 },
-            onUpdate: () => {
-              // La goutte de tête suit la pointe de chaque filet.
-              const p = Math.max(0.005, t ? t.progress() : 0);
-              chemins.forEach((_c, k) => {
-                const pt = table[k][Math.round(p * 256)];
-                tetes[k].setAttribute("cx", String(pt.x));
-                tetes[k].setAttribute("cy", String(pt.y));
-              });
-              TACHES.forEach(([, y], k) => {
-                const oui = p >= y;
-                if (oui !== montrees[k]) { montrees[k] = oui; montre(k, oui); }
-              });
-            },
-          },
-        );
-        // Position de départ des têtes avant le premier défilement.
-        chemins.forEach((c, k) => { const pt = c.getPointAtLength(0.005 * longueurs[k]); gsap.set(tetes[k], { attr: { cx: pt.x, cy: pt.y } }); });
-        // La goutte de tête palpite doucement.
-        gsap.to(tetes, { scale: 1.35, transformOrigin: "50% 50%", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.4 });
+        // Part tracée : jusqu'à 65 % de l'écran courant, lissée.
+        const cible = () => Math.min(1, Math.max(0.01, (window.scrollY + window.innerHeight * POINTE) / h));
+        const etat = { p: cible() };
+        const applique = () => {
+          const p = etat.p;
+          gsap.set(couches, { drawSVG: `0% ${p * 100}%` });
+          chemins.forEach((_c, k) => {
+            const pt = table[k][Math.round(p * 256)];
+            pointes[k].x = pt.x; pointes[k].y = pt.y;
+            tetes[k].setAttribute("transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+          });
+          seuils.forEach((y, k) => {
+            const oui = p >= y;
+            if (oui !== montrees[k]) { montrees[k] = oui; montre(k, oui); }
+          });
+        };
+        applique();
+        ScrollTrigger.create({
+          trigger: document.documentElement, start: "top top", end: "bottom bottom",
+          onUpdate: () => gsap.to(etat, { p: cible(), duration: 0.6, ease: "power2.out", overwrite: true, onUpdate: applique }),
+        });
+
+        // La larme de tête gonfle doucement.
+        gsap.to(gouttes, { scaleY: 1.25, scaleX: 1.1, transformOrigin: "50% 0%", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.4 });
+
+        // De temps en temps, une goutte se détache de la pointe et glisse avant de s'effacer.
+        const detache = contextSafe!((k: number) => {
+          const g = chutes[k];
+          const { x, y } = pointes[k];
+          gsap.timeline({ onComplete: () => { gsap.delayedCall(gsap.utils.random(1.5, 4), detache, [k]); } })
+            .set(g, { attr: { cx: x, cy: y + traces[k].ep * 0.9 }, y: 0, scaleY: 1, autoAlpha: 1, transformOrigin: "50% 0%" })
+            .to(g, { y: gsap.utils.random(40, 90), scaleY: 1.6, duration: 1.1, ease: "power2.in" })
+            .to(g, { autoAlpha: 0, duration: 0.35 }, "-=0.35");
+        });
+        chutes.forEach((_g, k) => gsap.delayedCall(gsap.utils.random(0.8, 3), detache, [k]));
       });
       // La hauteur de page a changé (filtre, polices, images) : on recale tous les déclencheurs.
       ScrollTrigger.refresh();
@@ -126,11 +147,22 @@ export default function BloodRiver() {
       {h > 0 && (
         <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="absolute left-0 top-0">
           {traces.map((t, k) => (
-            <path key={k} className="br-filet" d={t.d} fill="none" stroke="var(--blood)" strokeWidth={t.ep} strokeLinecap="round" />
+            <g key={k} strokeLinecap="round" fill="none">
+              {/* sous-couche sombre, filet, reflet brillant décalé */}
+              <path className="br-couche" d={t.d} stroke="var(--blood-deep)" strokeWidth={t.ep + 2} />
+              <path className="br-couche br-filet" d={t.d} stroke="var(--blood)" strokeWidth={t.ep} />
+              <path className="br-couche" d={t.d} stroke="rgba(255,140,120,.35)" strokeWidth={Math.max(0.8, t.ep * 0.22)} transform="translate(-1 0)" />
+            </g>
           ))}
-          {traces.map((t, k) => (
-            <circle key={k} className="br-tete" cx={t.x} cy={0} r={t.ep * 0.95} fill="var(--blood)" />
-          ))}
+          {PERLES.map(([f, y], k) => {
+            const r = traces[f].ep * (0.75 + (k % 3) * 0.12);
+            return (
+              <g key={k} className="br-perle">
+                <ellipse cx={traces[f].x} cy={y * h} rx={r} ry={r * 1.5} fill="var(--blood)" />
+                <circle cx={traces[f].x - r * 0.35} cy={y * h - r * 0.5} r={r * 0.3} fill="rgba(255,140,120,.35)" />
+              </g>
+            );
+          })}
           {TACHES.map(([f, y], k) => {
             const cx = traces[f].x;
             const cy = y * h;
@@ -143,6 +175,15 @@ export default function BloodRiver() {
               </g>
             );
           })}
+          {traces.map((t, k) => (
+            <circle key={k} className="br-chute" cx={t.x} cy={0} r={t.ep * 0.55} fill="var(--blood)" />
+          ))}
+          {traces.map((t, k) => (
+            <g key={k} className="br-tete" transform={`translate(${t.x} 0)`}>
+              <path className="br-larme" d={larme(t.ep * 0.95)} fill="var(--blood)" />
+              <circle cx={-t.ep * 0.35} cy={-t.ep * 0.2} r={Math.max(0.8, t.ep * 0.22)} fill="rgba(255,150,130,.45)" />
+            </g>
+          ))}
         </svg>
       )}
     </div>

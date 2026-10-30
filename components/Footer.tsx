@@ -5,14 +5,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { waLien, WHATSAPP_AFFICHE } from "@/lib/masques";
+import SangGL from "@/components/hero/SangGL";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
-
-// Gouttes qui descendent du bandeau rouge de Contact : [x en %, longueur en px, largeur en px]
-const GOUTTES: [number, number, number][] = [
-  [6, 46, 10], [17, 88, 14], [29, 34, 9], [41, 120, 16], [55, 58, 11],
-  [66, 96, 13], [78, 40, 10], [89, 74, 12],
-];
 
 const lien = "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 transition-[background-size] duration-300 hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]"; /* taste-skill-ignore: soulignement animé, couleur unie */
 
@@ -24,7 +19,6 @@ export default function Footer() {
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const st = { trigger: root.current, start: "top 85%", once: true };
-        gsap.from(".f-goutte", { scaleY: 0, transformOrigin: "50% 0%", duration: 1.6, ease: "power2.in", stagger: { each: 0.12, from: "random" }, scrollTrigger: st });
         gsap.from(".f-ligne", { yPercent: 100, duration: 1, ease: "power3.out", stagger: 0.12, scrollTrigger: st });
         gsap.from(".f-col", { y: 24, autoAlpha: 0, duration: 0.8, ease: "power2.out", stagger: 0.08, delay: 0.3, scrollTrigger: st });
       });
@@ -34,25 +28,19 @@ export default function Footer() {
 
   return (
     <footer ref={root} className="relative flex min-h-[80svh] flex-col text-ink">
-      {/* Le sang de la section Contact déborde dans le pied de page. */}
-      <svg aria-hidden="true" className="block h-[136px] w-full" viewBox="0 0 1000 136" preserveAspectRatio="none">
-        <rect width="1000" height="14" fill="var(--blood)" />
-        {GOUTTES.map(([x, l, w], i) => (
-          <path
-            key={i}
-            className="f-goutte"
-            fill="var(--blood)"
-            d={`M${x * 10 - w / 2} 12 L${x * 10 - w / 2} ${12 + l - w / 2} A${w / 2} ${w / 2} 0 0 0 ${x * 10 + w / 2} ${12 + l - w / 2} L${x * 10 + w / 2} 12 Z`}
-          />
-        ))}
-      </svg>
+      {/* Le sang coule du haut du pied de page et fait une flaque sous le titre (derrière le texte). */}
+      <div className="relative">
+        <SangGL flaque className="absolute inset-x-0 top-0 h-[calc(100%+3rem)] md:h-[calc(100%+4.25rem)]" />
+        <div aria-hidden="true" className="h-[136px]" />
+        <div className="wrap relative z-10 pt-10 md:pt-16">
+          <h2 className="font-display font-light uppercase leading-[0.95] text-[clamp(40px,8vw,140px)]">
+            <span className="block overflow-hidden"><span className="f-ligne block">À samedi,</span></span>
+            <span className="block overflow-hidden"><span className="f-ligne gresille block">si tu oses.</span></span>
+          </h2>
+        </div>
+      </div>
 
-      <div className="wrap flex flex-1 flex-col pt-10 pb-8 md:pt-16">
-        <h2 className="font-display font-light uppercase leading-[0.95] text-[clamp(40px,8vw,140px)]">
-          <span className="block overflow-hidden"><span className="f-ligne block">À samedi,</span></span>
-          <span className="block overflow-hidden"><span className="f-ligne gresille block">si tu oses.</span></span>
-        </h2>
-
+      <div className="wrap relative z-10 flex flex-1 flex-col pb-8">
         <div className="mt-14 grid gap-10 text-[clamp(16px,1.2vw,18px)] md:mt-20 md:grid-cols-3">
           <div className="f-col">
             <p className="text-muted">La soirée</p>
