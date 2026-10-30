@@ -11,7 +11,6 @@ gsap.registerPlugin(useGSAP, ScrollTrigger, Flip);
 
 type Filtre = Style | "tous";
 const FILTRES: { id: Filtre; nom: string }[] = [{ id: "tous", nom: "Tous" }, ...STYLES];
-const NOM_STYLE = Object.fromEntries(STYLES.map((s) => [s.id, s.nom])) as Record<Style, string>;
 const calme = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function Catalogue() {
@@ -100,14 +99,14 @@ export default function Catalogue() {
   const depart = useRef(0);
 
   return (
-    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative py-28 md:py-40">
-      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[7.4vw] md:text-[clamp(36px,5vw,72px)]">
+    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative py-[var(--section-y)]">
+      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[7.4vw] md:text-[length:var(--step-head)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
       </h2>
-      <p className="mt-6 text-[18px]">Jason 1 650 FCFA, les autres 3 750 FCFA. Les quantités sont limitées.</p>
+      <p className="mt-4 text-[length:var(--step-body)] text-muted">Jason 1 650 FCFA · autres 3 750 FCFA</p>
 
-      <div role="group" aria-label="Filtrer les masques" className="relative mt-10 flex flex-wrap gap-x-7 gap-y-3 pb-3 text-[16px]">
+      <div role="group" aria-label="Filtrer les masques" className="relative mt-7 flex flex-wrap gap-x-7 gap-y-3 pb-3 text-[length:var(--step-body)] md:mt-10">
         {FILTRES.map((f) => (
           <button
             key={f.id}
@@ -115,22 +114,22 @@ export default function Catalogue() {
             data-filtre={f.id}
             aria-pressed={filtre === f.id}
             onClick={(e) => filtrer(f.id, e.currentTarget)}
-            className="text-muted transition-colors duration-300 hover:text-ink aria-pressed:text-ember"
+            className="text-muted transition-colors duration-300 hover:text-ink aria-pressed:text-accent"
           >
             {f.nom}
           </button>
         ))}
-        <span ref={barre} aria-hidden="true" className="absolute bottom-0 left-0 h-px w-0 bg-ember" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
+        <span ref={barre} aria-hidden="true" className="absolute bottom-0 left-0 h-px w-0 bg-accent" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
       </div>
 
-      <ul className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+      <ul className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
         {MASQUES.map((x, i) => (
           <li key={x.num} data-num={x.num} data-style={x.style} className="cat-carte group">
             <button
               type="button"
               onClick={(e) => ouvre(i, e.currentTarget)}
               aria-label={`Agrandir le masque N°${x.num}, ${x.nom}`}
-              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-[#0d0a09] transition-transform duration-[120ms] ease-out active:scale-[.98]"
+              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-surface transition-transform duration-[120ms] ease-out active:scale-[.98]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -142,21 +141,21 @@ export default function Catalogue() {
                 className="h-full w-full object-cover brightness-[.92] contrast-[1.05] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
               />
               {/* Vignette douce : évite l'éblouissement des fonds blancs */}
-              <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px] shadow-[inset_0_0_48px_14px_rgba(13,10,9,.55)]" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
-              <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-blood transition-transform duration-500 [@media(pointer:fine)]:group-hover:scale-x-100" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
+              <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px] shadow-[inset_0_0_48px_14px_rgba(19,18,18,.55)]" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
+              <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-500 [@media(pointer:fine)]:group-hover:scale-x-100" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
             </button>
             <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <div className="min-w-0">
-                <span className="font-display text-[15px] text-ember">N°{x.num}</span>
-                <p className="line-clamp-2 text-[16px] font-medium leading-snug md:text-[17px]">{x.nom}</p>
-                <p className="flex flex-wrap gap-x-2 text-[15px] text-muted"><span>{x.prix}</span><span>{NOM_STYLE[x.style]}</span></p>
+                <span className="font-display text-[length:var(--step-small)] text-accent">N°{x.num}</span>
+                <p className="line-clamp-2 text-[length:var(--step-body)] font-medium leading-snug">{x.nom}</p>
+                <p className="text-[length:var(--step-small)] text-muted">{x.prix}</p>
               </div>
               <a
                 href={waLien(x)}
                 target="_blank"
                 rel="noopener"
                 aria-label={`Réserver le masque N°${x.num}, ${x.nom}, sur WhatsApp`}
-                className="self-start sm:self-auto shrink-0 touch-manipulation bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[15px] text-ember transition-[background-size] duration-200 ease-out hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
+                className="self-start sm:self-auto shrink-0 touch-manipulation bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[length:var(--step-small)] text-accent transition-[background-size] duration-200 ease-out hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
               >
                 Réserver
               </a>
@@ -176,19 +175,19 @@ export default function Catalogue() {
         className="m-auto w-[min(560px,calc(100%-32px))] bg-transparent p-0 text-ink backdrop:bg-black/85"
       >
         <div className="cat-v-boite rounded-[4px] bg-surface">
-          <div className="relative overflow-hidden rounded-t-[4px] bg-[#0d0a09]">
+          <div className="relative overflow-hidden rounded-t-[4px] bg-surface">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={m.img} alt={m.nom} width={480} height={480} className="cat-v-img aspect-square w-full object-cover" />
             <button type="button" onClick={ferme} aria-label="Fermer" className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full bg-black/70 text-2xl leading-none">×</button>
           </div>
           <div className="grid gap-4 p-5">
             <div>
-              <span className="font-display text-[15px] text-ember">N°{m.num}</span>
-              <p id="cat-v-titre" className="text-[20px] font-medium">{m.nom}</p>
-              <p className="text-[15px] text-muted">{m.prix}</p>
+              <span className="font-display text-[length:var(--step-small)] text-accent">N°{m.num}</span>
+              <p id="cat-v-titre" className="text-[length:var(--step-lead)] font-medium">{m.nom}</p>
+              <p className="text-[length:var(--step-small)] text-muted">{m.prix}</p>
             </div>
             <a href={waLien(m)} target="_blank" rel="noopener" className="btn w-full">Réserver le n°{m.num} sur WhatsApp</a>
-            <div className="flex justify-between text-[15px] text-muted">
+            <div className="flex justify-between text-[length:var(--step-small)] text-muted">
               <button type="button" onClick={() => voisin(-1)} className="hover:text-ink">Masque précédent</button>
               <button type="button" onClick={() => voisin(1)} className="hover:text-ink">Masque suivant</button>
             </div>

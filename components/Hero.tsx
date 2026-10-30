@@ -9,6 +9,9 @@ import SangGL from "@/components/hero/SangGL";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+// Flèches du sélecteur : cible tactile de 44px.
+const fleche = "grid h-11 w-11 shrink-0 place-items-center text-muted transition-colors hover:text-accent active:scale-95";
+
 const DEPART = 6; // masque N°07
 const PAS = 7;
 // 7 et 23 premiers entre eux : on passe par les 23 masques dans un ordre mélangé
@@ -18,7 +21,6 @@ export default function Hero() {
   const lampe = useRef<HTMLDivElement>(null);
   const premier = useRef(true);
   const [i, setI] = useState(DEPART);
-  const [vrai, setVrai] = useState(false);
   const m = MASQUES[i];
 
   const suivant = () => setI((n) => (n + PAS) % MASQUES.length);
@@ -77,7 +79,7 @@ export default function Hero() {
         ref={lampe}
         aria-hidden="true"
         className="pointer-events-none invisible absolute inset-0 z-0"
-        style={{ /* taste-skill-ignore: lampe torche */ background: "radial-gradient(circle 32vmax at var(--x, 50%) var(--y, 40%), rgba(179,16,13,.22), transparent 70%)" }}
+        style={{ /* taste-skill-ignore: lampe torche */ background: "radial-gradient(circle 32vmax at var(--x, 50%) var(--y, 40%), rgba(243,83,13,.14), transparent 70%)" }}
       />
 
       {/* Sang qui suinte du bord haut (WebGL). */}
@@ -90,7 +92,7 @@ export default function Hero() {
         <img src={m.img} alt="" width={480} height={480} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: "50% 38%" }} />
       </div>
 
-      <h1 id="hero-titre" className="font-display relative z-10 font-light uppercase text-[clamp(2.5rem,11.5vw,10rem)] md:text-[clamp(2.5rem,9.6vw,10rem)]" style={{ lineHeight: 0.95 }}>
+      <h1 id="hero-titre" className="font-display relative z-10 font-light uppercase text-[length:var(--step-display)]" style={{ lineHeight: 0.95 }}>
         <span className="h-ligne block"><span className="gresille">Le 31 octobre,</span></span>
         <span className="h-ligne block whitespace-nowrap">
           <span className="gresille">tu seras</span>{" "}
@@ -98,7 +100,6 @@ export default function Hero() {
             type="button"
             onClick={suivant}
             aria-label={`Changer de masque, actuellement N°${m.num} ${m.nom}`}
-            data-vrai={vrai}
             className="h-fente duo relative inline-block cursor-pointer overflow-hidden align-baseline"
             style={{ width: "2.6em", height: "0.78em", willChange: "clip-path" }}
           >
@@ -108,20 +109,21 @@ export default function Hero() {
         </span>
       </h1>
 
-      <div className="relative z-10 mt-10 grid gap-6 md:grid-cols-12 md:items-end">
-        <p className="h-suite max-w-[38ch] md:col-span-6" style={{ fontSize: "var(--step-lead)", lineHeight: 1.4 }}>
-          La soirée Halloween du BDE Epitech Bénin, samedi 31 octobre dès 19h à l&apos;EYA Centre. Choisis ton visage parmi 23 masques.
+      <div className="relative z-10 mt-7 grid gap-6 md:mt-10 md:grid-cols-12 md:items-end">
+        <p className="h-suite max-w-[34ch] text-[length:var(--step-lead)] leading-[1.4] md:col-span-6">
+          Soirée Halloween du BDE Epitech Bénin, samedi 31 octobre dès 19h à l&apos;EYA Centre.
         </p>
 
         <div className="h-suite flex flex-col gap-4 md:col-span-6 md:col-start-7 md:items-end">
-          <p aria-live="polite" className="text-[var(--step-body)]">
-            N°{m.num} · {m.nom} · <span className="text-ember">{m.prix}</span>
-          </p>
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-[var(--step-small)] text-muted">
-            <button type="button" onClick={precedent} className="underline-offset-4 hover:text-ink hover:underline">Masque précédent</button>
-            <button type="button" onClick={suivant} className="underline-offset-4 hover:text-ink hover:underline">Masque suivant</button>
-            <button type="button" aria-pressed={vrai} onClick={() => setVrai((v) => !v)} className="underline-offset-4 hover:text-ink hover:underline">
-              {vrai ? "Revenir au rouge" : "Voir en vraies couleurs"}
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={precedent} aria-label="Masque précédent" className={fleche}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
+            </button>
+            <p aria-live="polite" className="text-[length:var(--step-body)]">
+              N°{m.num} {m.nom} <span className="whitespace-nowrap text-accent">{m.prix}</span>
+            </p>
+            <button type="button" onClick={suivant} aria-label="Masque suivant" className={fleche}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
             </button>
           </div>
           <a href={waLien(m)} target="_blank" rel="noopener" className="btn w-full md:w-auto">

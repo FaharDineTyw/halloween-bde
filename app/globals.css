@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
-/* Palette prise sur l'affiche et le logo du BDE : noir, os, sang, braise. */
+/* Palette relevée sur l'affiche : anthracite, orange citrouille, gris neutres. Le rouge sang reste pour le sang. */
 :root {
-  --bg: #000000;
-  --surface: #110d0b;
-  --ink: #efe7da;
-  --muted: #b3a999;
+  --bg: #131212;
+  --surface: #1c1a1a;
+  --ink: #ecebeb;
+  --muted: #a3a0a1;
   --blood: #b3100d;
   --blood-deep: #5c0605;
-  --ember: #ff9a00;
-  --accent-ink: #ffffff;
+  --accent: #f3530d;
+  --accent-deep: #a13d18;
+  --ember: var(--accent);
+  --accent-ink: #131212;
+
+  /* Rythme vertical unique entre les sections. */
+  --section-y: clamp(72px, 9vw, 128px);
 
   --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
   --step-body: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
   --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
   --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
-  --step-display: clamp(3.25rem, 11vw, 11rem);
+  --step-display: clamp(2.5rem, 11vw, 11rem);
 
   --margin: clamp(16px, 2.5vw, 32px);
 }
@@ -28,6 +33,8 @@
   --color-blood: var(--blood);
   --color-blood-deep: var(--blood-deep);
   --color-ember: var(--ember);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
   --font-display: var(--font-zodiak);
   --font-sans: var(--font-hanken);
 }
@@ -36,8 +43,8 @@ html {
   background: var(--bg); color-scheme: dark;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
-  scrollbar-color: var(--blood-deep) var(--bg);
-  caret-color: var(--blood);
+  scrollbar-color: var(--accent-deep) var(--bg);
+  caret-color: var(--accent);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 a, button, [role="button"] { touch-action: manipulation; }
@@ -55,21 +62,21 @@ body {
 .font-display { font-family: var(--font-zodiak), Georgia, serif; letter-spacing: -0.01em; line-height: 1; }
 .wrap { padding-inline: var(--margin); }
 
-::selection { background: var(--blood); color: var(--accent-ink); }
+::selection { background: var(--accent); color: var(--accent-ink); }
 :focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
 
 /* Bouton unique du site : rectangle plein, coins droits. */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .5em;
-  background: var(--blood); color: var(--accent-ink); font-weight: 500;
+  background: var(--accent); color: var(--accent-ink); font-weight: 500;
   padding: .85em 1.4em; border-radius: 0; text-decoration: none;
   transition: background-color .2s ease, transform .14s var(--ease-out);
 }
-@media (hover: hover) and (pointer: fine) { .btn:hover { background: #d4140f; } }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: #ff6a26; } }
 .btn:active { transform: scale(.97); }
 
 /* Traitement unique des photos de masques : bichromie sang (fond blanc -> rouge). */
-.duo { background: var(--blood); isolation: isolate; }
+.duo { background: var(--accent); isolation: isolate; }
 .duo img { filter: grayscale(1) contrast(1.35); mix-blend-mode: multiply; }
 .duo[data-vrai="true"] { background: #fff; }
 .duo[data-vrai="true"] img { filter: none; mix-blend-mode: normal; }

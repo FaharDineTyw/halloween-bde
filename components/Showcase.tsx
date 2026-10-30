@@ -93,17 +93,17 @@ export default function Showcase() {
       ref={root}
       id="soiree"
       aria-labelledby="soiree-titre"
-      className="wrap relative flex min-h-svh items-center overflow-x-clip py-[clamp(96px,16vh,200px)]"
+      className="wrap relative overflow-x-clip py-[var(--section-y)]"
     >
-      <div className="flex w-full flex-col items-center gap-10 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-x-12 lg:gap-y-14">
+      <div className="flex w-full flex-col items-center gap-7 md:gap-10 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-x-12 lg:gap-y-14">
         {/* Le titre se répartit autour de l'éventail : display contents sur grand écran. */}
         <h2 id="soiree-titre" className="contents">
-          <span className={`sc-date ${titre} relative z-10 block text-center text-[6.8vw] leading-none lg:order-1 lg:text-left lg:text-[clamp(40px,4.2vw,84px)]`}>
+          <span className={`sc-date ${titre} relative z-10 block text-center text-[6.8vw] leading-none lg:order-1 lg:text-left lg:text-[length:var(--step-head)]`}>
             <span className="lg:hidden">Samedi 31 octobre</span>
             <span className="hidden lg:block">Samedi</span>
             <span className="hidden lg:block">31 oct.</span>
           </span>
-          <span className={`sc-lieu ${titre} relative z-10 order-3 block text-center text-[6.8vw] leading-none lg:text-right lg:text-[clamp(40px,4.2vw,84px)]`}>
+          <span className={`sc-lieu ${titre} relative z-10 order-3 block text-center text-[6.8vw] leading-none lg:text-right lg:text-[length:var(--step-head)]`}>
             <span className="lg:hidden">EYA Centre, dès 19h</span>
             <span className="hidden lg:block">EYA Centre</span>
             <span className="hidden lg:block">dès 19h</span>
@@ -115,7 +115,7 @@ export default function Showcase() {
             <span
               aria-hidden="true"
               className="pointer-events-none absolute -inset-[35%] -z-10"
-              style={{ /* taste-skill-ignore: halo */ background: "radial-gradient(closest-side, rgba(179,16,13,.45), transparent)" }}
+              style={{ /* taste-skill-ignore: halo */ background: "radial-gradient(closest-side, rgba(243,83,13,.32), transparent)" }}
             />
             {ARRIERE.map((m, i) => (
               <div
@@ -142,8 +142,8 @@ export default function Showcase() {
           </div>
         </div>
 
-        <p className="sc-legende order-4 max-w-[40ch] text-center text-[18px] leading-relaxed lg:col-start-2">
-          Déguisement fortement conseillé. Les masques sont aussi vendus sur place, tant qu&apos;il en reste.
+        <p className="sc-legende order-4 text-center text-[length:var(--step-body)] text-muted lg:col-start-2">
+          Déguisement conseillé.
         </p>
       </div>
     </section>
