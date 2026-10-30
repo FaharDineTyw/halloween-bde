@@ -4,7 +4,8 @@
 const { Browser } = await import(`${process.env.HOME}/.claude/skills/design-taste-frontend/scripts/lib/cdp.mjs`);
 const URL = process.env.URL || "http://localhost:8731/";
 const b = await Browser.launch();
-const p = await b.newPage({ width: 1440, height: 900, dsf: 1 });
+// Mouvement réduit : on teste la logique du filtre, pas la fluidité (le navigateur sans carte graphique tourne à quelques images/s).
+const p = await b.newPage({ width: 1440, height: 900, dsf: 1, reducedMotion: true });
 let erreurs = 0; b.on(p.sessionId, "Runtime.exceptionThrown", () => erreurs++);
 await p.goto(URL, { settleMs: 2000 });
 await p.eval(() => document.getElementById("masques").scrollIntoView());
@@ -15,6 +16,8 @@ await clic("Jason"); await new Promise((r) => setTimeout(r, 1000));
 const jason = await compte();
 await clic("Tous"); await new Promise((r) => setTimeout(r, 1000));
 for (let i = 0; i < 6; i++) { await p.eval(() => window.scrollBy(0, 500)); await new Promise((r) => setTimeout(r, 400)); }
+// Laisse finir les animations d'entrée au défilement avant de compter.
+await new Promise((r) => setTimeout(r, 2000));
 const tous = await compte();
 await b.close();
 const ok = erreurs === 0 && jason.affiches === 6 && tous.affiches === 23 && tous.opaques === 23;

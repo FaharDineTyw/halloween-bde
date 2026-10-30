@@ -2,14 +2,13 @@
 
 import { useRef, useState } from "react";
 import gsap from "gsap";
-import { Flip } from "gsap/Flip";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, STYLES, waLien, type Style } from "@/lib/masques";
 import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
 import Bouton4Trous from "@/components/ui/Bouton4Trous";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, Flip);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 type Filtre = Style | "tous";
 const FILTRES: { id: Filtre; nom: string }[] = [{ id: "tous", nom: "Tous" }, ...STYLES];
@@ -56,27 +55,16 @@ export default function Catalogue() {
     setFiltre(id);
     placeBarre(bouton);
     const cartes = gsap.utils.toArray<HTMLElement>(".cat-carte", scope.current);
-    const etat = Flip.getState(cartes);
-    // ponytail: hidden posé directement sur le DOM (hors React) pour que Flip mesure avant/après ; si un rendu React se met
-    // à gérer `hidden` sur ces <li>, passer le filtrage dans l'état React et lancer Flip dans un useLayoutEffect.
+    // Dès qu'on filtre, l'entrée au défilement n'a plus lieu d'être (elle se battait avec le filtre).
+    ScrollTrigger.getAll().forEach((t) => { if (cartes.includes(t.trigger as HTMLElement)) t.kill(); });
+    // ponytail: hidden posé directement sur le DOM (hors React) ; si un rendu React se met à gérer
+    // `hidden` sur ces <li>, passer le filtrage dans l'état React.
     cartes.forEach((c) => { c.hidden = id !== "tous" && c.dataset.style !== id; });
-    // Fin du filtre : toute carte visible doit être pleinement affichée (même si son entrée au défilement est déjà passée).
-    const fin = () => {
-      gsap.to(cartes.filter((c) => !c.hidden), { autoAlpha: 1, y: 0, scale: 1, duration: 0.2, ease: "power3.out" });
-      ScrollTrigger.refresh();
-    };
-    if (calme()) { gsap.set(cartes, { autoAlpha: 1, y: 0 }); fin(); return; }
-    Flip.from(etat, {
-      duration: 0.42,
-      ease: "power4.inOut",
-      absolute: true,
-      stagger: 0.02,
-      // Les tweens d'entrée/sortie ne sont pas renvoyés à Flip : renvoyés, ils finissaient imbriqués
-      // dans le contexte React et dans la timeline de Flip à la fois (boucle infinie, catalogue cassé).
-      onEnter: (els) => { gsap.fromTo(els, { autoAlpha: 0, scale: 0.95 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.35, ease: "power3.out" }); },
-      onLeave: (els) => { gsap.to(els, { autoAlpha: 0, scale: 0.95, duration: 0.18, ease: "power3.out" }); },
-      onComplete: fin,
-    });
+    const gardees = cartes.filter((c) => !c.hidden);
+    ScrollTrigger.refresh();
+    // Simple fondu des cartes gardées : pas de positionnement absolu, donc rien ne peut rester figé.
+    if (calme()) { gsap.set(gardees, { autoAlpha: 1, y: 0 }); return; }
+    gsap.fromTo(gardees, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out", stagger: 0.025, overwrite: "auto" });
   });
 
   // Visionneuse
@@ -101,7 +89,7 @@ export default function Catalogue() {
   const depart = useRef(0);
 
   return (
-    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-bg py-[var(--section-y)] text-ink">
+    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative py-[var(--section-y)] text-ink">
       <h2 id="masques-titre" className="font-display uppercase leading-[1] text-[6.2vw] text-ink md:text-[length:var(--step-head)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
@@ -130,7 +118,7 @@ export default function Catalogue() {
               type="button"
               onClick={(e) => ouvre(i, e.currentTarget)}
               aria-label={`Agrandir le masque N°${x.num}, ${x.nom}`}
-              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-white transition-transform duration-[120ms] ease-out active:scale-[.98]"
+              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] transition-transform duration-[120ms] ease-out active:scale-[.98]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -140,6 +128,7 @@ export default function Catalogue() {
                 height={480}
                 loading={i < 4 ? "eager" : "lazy"}
                 decoding="async"
+                style={{ /* taste-skill-ignore: fondu du fond blanc des photos */ WebkitMaskImage: "radial-gradient(ellipse 72% 70% at 50% 46%, #000 58%, transparent 100%)", maskImage: "radial-gradient(ellipse 72% 70% at 50% 46%, #000 58%, transparent 100%)" }}
                 className="h-full w-full object-cover [image-rendering:auto] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
               />
               <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-500 [@media(pointer:fine)]:group-hover:scale-x-100" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}

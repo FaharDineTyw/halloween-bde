@@ -11,10 +11,10 @@ const ETAPES = [
 // Suite claire du catalogue : on choisit au-dessus, on réserve ici.
 export default function Contact() {
   return (
-    <section id="reserver" aria-labelledby="reserver-titre" className="wrap bg-ink pb-[var(--section-y)] text-bg">
+    <section id="reserver" aria-labelledby="reserver-titre" className="wrap pb-[var(--section-y)] text-ink">
       <div className="grid gap-8 pt-[var(--section-y)] lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-7 lg:self-center">
-          <h2 id="reserver-titre" className="font-display uppercase leading-[1] text-accent-deep text-[length:var(--step-head)]">
+          <h2 id="reserver-titre" className="font-display uppercase leading-[1] text-accent text-[length:var(--step-head)]">
             Réserve-le<br />avant samedi
           </h2>
           <ol className="mt-8 grid gap-4 md:mt-10">
