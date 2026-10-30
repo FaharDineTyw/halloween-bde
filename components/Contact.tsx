@@ -11,7 +11,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const ETAPES = [
   "Choisis ton masque",
-  `Envoie son numéro sur WhatsApp\u00a0: ${WHATSAPP_AFFICHE.replace(/ /g, "\u00a0")}`,
+  `Envoie le numéro du masque au ${WHATSAPP_AFFICHE.replace(/ /g, "\u00a0")} sur WhatsApp`,
   "Récupère-le au BDE ou sur place",
 ];
 
@@ -80,14 +80,12 @@ export default function Contact() {
         </div>
 
         {/* Vitrine : un masque à la fois, en vraies couleurs */}
-        <figure data-entree className="mx-auto w-full max-w-[420px] lg:col-span-5 lg:col-start-8 lg:max-w-none">
+        <figure data-entree className="mx-auto w-full max-w-[400px] lg:col-span-5 lg:col-start-8">
           <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="group block">
             <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-surface transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] group-hover:scale-[1.02]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={m.img} alt={m.nom} width={480} height={600} loading="lazy"
-                className="vt-img h-full w-full object-cover"
-                style={{ filter: "brightness(.92) contrast(1.05)" }} />
-              <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px]" style={{ boxShadow: "inset 0 0 80px 18px rgba(19,18,18,.55)" }} />
+                decoding="async" className="vt-img h-full w-full bg-white object-cover [image-rendering:auto]" />
             </div>
             <figcaption className="mt-4 flex items-baseline justify-between gap-4 text-[length:var(--step-body)]" aria-live="polite">
               <span><span className="font-display text-accent">N°{m.num}</span> <span className="font-medium">{m.nom}</span></span>

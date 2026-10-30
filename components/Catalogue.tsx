@@ -100,12 +100,11 @@ export default function Catalogue() {
   const depart = useRef(0);
 
   return (
-    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative py-[var(--section-y)]">
-      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[7.4vw] md:text-[length:var(--step-head)]">
+    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-ink py-[var(--section-y)] text-bg">
+      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[6.9vw] md:text-[length:var(--step-head)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
       </h2>
-      <p className="mt-4 text-[length:var(--step-body)] text-muted">Jason 1 650 FCFA · autres 3 750 FCFA</p>
 
       <div role="group" aria-label="Filtrer les masques" className="relative mt-7 flex flex-wrap gap-x-7 gap-y-3 pb-3 text-[length:var(--step-body)] md:mt-10">
         {FILTRES.map((f) => (
@@ -115,7 +114,7 @@ export default function Catalogue() {
             data-filtre={f.id}
             aria-pressed={filtre === f.id}
             onClick={(e) => filtrer(f.id, e.currentTarget)}
-            className="text-muted transition-colors duration-300 hover:text-ink aria-pressed:text-accent"
+            className="text-[#5b5758] transition-colors duration-300 hover:text-bg aria-pressed:text-accent-deep"
           >
             {f.nom}
           </button>
@@ -130,7 +129,7 @@ export default function Catalogue() {
               type="button"
               onClick={(e) => ouvre(i, e.currentTarget)}
               aria-label={`Agrandir le masque N°${x.num}, ${x.nom}`}
-              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-surface transition-transform duration-[120ms] ease-out active:scale-[.98]"
+              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-white transition-transform duration-[120ms] ease-out active:scale-[.98]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -139,24 +138,23 @@ export default function Catalogue() {
                 width={480}
                 height={480}
                 loading={i < 4 ? "eager" : "lazy"}
-                className="h-full w-full object-cover brightness-[.92] contrast-[1.05] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
+                decoding="async"
+                className="h-full w-full object-cover [image-rendering:auto] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
               />
-              {/* Vignette douce : évite l'éblouissement des fonds blancs */}
-              <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px] shadow-[inset_0_0_48px_14px_rgba(19,18,18,.55)]" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
               <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-500 [@media(pointer:fine)]:group-hover:scale-x-100" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
             </button>
             <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <div className="min-w-0">
-                <span className="font-display text-[length:var(--step-small)] text-accent">N°{x.num}</span>
+                <span className="font-display text-[length:var(--step-small)] text-accent-deep">N°{x.num}</span>
                 <p className="line-clamp-2 text-[length:var(--step-body)] font-medium leading-snug">{x.nom}</p>
-                <p className="text-[length:var(--step-small)] text-muted">{x.prix}</p>
+                <p className="text-[length:var(--step-small)] text-[#5b5758]">{x.prix}</p>
               </div>
               <a
                 href={waLien(x)}
                 target="_blank"
                 rel="noopener"
                 aria-label={`Réserver le masque N°${x.num}, ${x.nom}, sur WhatsApp`}
-                className="self-start sm:self-auto shrink-0 touch-manipulation bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[length:var(--step-small)] text-accent transition-[background-size] duration-200 ease-out hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
+                className="self-start sm:self-auto shrink-0 touch-manipulation underline decoration-transparent decoration-1 underline-offset-[0.25em] text-[length:var(--step-small)] text-accent-deep transition-[text-decoration-color] duration-200 ease-out hover:decoration-current focus-visible:decoration-current"
               >
                 Réserver
               </a>
@@ -173,12 +171,12 @@ export default function Catalogue() {
         onKeyDown={(e) => { if (e.key === "ArrowRight") voisin(1); if (e.key === "ArrowLeft") voisin(-1); }}
         onPointerDown={(e) => { depart.current = e.clientX; }}
         onPointerUp={(e) => { const dx = e.clientX - depart.current; if (Math.abs(dx) > 50) voisin(dx < 0 ? 1 : -1); }}
-        className="m-auto w-[min(560px,calc(100%-32px))] bg-transparent p-0 text-ink backdrop:bg-black/85"
+        className="m-auto w-[min(480px,calc(100%-32px))] bg-transparent p-0 text-ink backdrop:bg-black/85"
       >
         <div className="cat-v-boite rounded-[4px] bg-surface">
           <div className="relative overflow-hidden rounded-t-[4px] bg-surface">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={m.img} alt={m.nom} width={480} height={480} className="cat-v-img aspect-square w-full object-cover" />
+            <img src={m.img} alt={m.nom} width={480} height={480} decoding="async" className="cat-v-img aspect-square w-full bg-white object-cover [image-rendering:auto]" />
             <button type="button" onClick={ferme} aria-label="Fermer" className="absolute right-3 top-3 grid h-11 w-11 place-items-center rounded-full bg-black/70 text-2xl leading-none">×</button>
           </div>
           <div className="grid gap-4 p-5">

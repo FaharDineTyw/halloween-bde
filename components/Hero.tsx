@@ -121,7 +121,7 @@ export default function Hero() {
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
             </button>
             <p aria-live="polite" className="text-[length:var(--step-body)]">
-              N°{m.num} {m.nom} <span className="whitespace-nowrap text-accent">{m.prix}</span>
+              N°{m.num} {m.nom}
             </p>
             <button type="button" onClick={suivant} aria-label="Masque suivant" className={fleche}>
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>

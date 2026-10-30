@@ -8,7 +8,7 @@ import SangGL from "@/components/hero/SangGL";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const lien = "bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 transition-[background-size] duration-200 ease-out hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]"; /* taste-skill-ignore: soulignement animé, couleur unie */
+const lien = "underline decoration-transparent decoration-1 underline-offset-[0.25em] transition-[text-decoration-color] duration-200 ease-out hover:decoration-current focus-visible:decoration-current";
 
 export default function Footer() {
   const root = useRef<HTMLElement>(null);
@@ -27,33 +27,32 @@ export default function Footer() {
 
   return (
     <footer ref={root} className="relative text-ink">
-      {/* Le sang coule du haut du pied de page et fait une flaque sous le titre (derrière le texte). */}
+      {/* Le sang descendu de la page entre par le haut en filets et fait une flaque sous le titre (derrière le texte). */}
       <div className="relative">
-        <SangGL flaque className="absolute inset-x-0 top-0 h-[calc(100%+3rem)] md:h-[calc(100%+4.25rem)]" />
+        <SangGL flaque coulees className="absolute inset-x-0 top-0 h-[calc(100%+3rem)] md:h-[calc(100%+4.25rem)]" />
         <div aria-hidden="true" className="h-[136px]" />
         <div className="wrap relative z-10 pt-10 md:pt-16">
-          <h2 className="font-display font-light uppercase leading-[0.95] text-[length:var(--step-display)]">
+          <h2 className="text-center font-display font-light uppercase leading-[0.95] text-[length:var(--step-display)]">
             <span className="block overflow-hidden"><span className="f-ligne block">À samedi,</span></span>
             <span className="block overflow-hidden"><span className="f-ligne gresille block">si tu oses.</span></span>
           </h2>
         </div>
       </div>
 
-      <div className="wrap relative z-10 pb-8">
-        <div className="f-col mt-14 flex flex-col gap-8 md:mt-20 md:flex-row md:items-end md:justify-between">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:gap-10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/logo-bde.svg" alt="Bureau des Étudiants Epitech Bénin" width={260} height={164} loading="lazy" className="h-auto w-[clamp(160px,22vw,320px)]" />
-            <div className="flex flex-col gap-2 text-[length:var(--step-small)]">
-              <nav aria-label="Pied de page" className="flex flex-wrap gap-x-6 gap-y-2">
-                <a href="#masques" className={lien}>Les masques</a>
-                <a href="#soiree" className={lien}>La soirée</a>
-                <a href="#reserver" className={lien}>Réserver</a>
-              </nav>
-              <p className="text-muted">© 2026 BDE Epitech Bénin</p>
-            </div>
+      <div className="wrap relative z-10 pb-10">
+        {/* Bas de page centré : logo plus petit que celui de l'en-tête, liens lisibles, mentions au milieu. */}
+        <div className="f-col mt-14 flex flex-col items-center gap-6 text-center md:mt-20">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/logo-bde.svg" alt="Bureau des Étudiants Epitech Bénin" width={76} height={48} loading="lazy" className="h-10 w-auto md:h-12" />
+          <nav aria-label="Pied de page" className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[length:var(--step-body)]">
+            <a href="#masques" className={lien}>Les masques</a>
+            <a href="#soiree" className={lien}>La soirée</a>
+            <a href="#reserver" className={lien}>Réserver</a>
+          </nav>
+          <div className="flex flex-col items-center gap-2 text-[length:var(--step-small)]">
+            <p className="text-muted">© 2026 BDE Epitech Bénin</p>
+            <a href="#haut" className={lien}>Retour en haut</a>
           </div>
-          <a href="#haut" className={`${lien} self-start text-[length:var(--step-small)] md:self-end`}>Retour en haut</a>
         </div>
       </div>
     </footer>
