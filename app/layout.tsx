@@ -15,7 +15,7 @@ const zodiak = localFont({
 const hanken = Hanken_Grotesk({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-hanken", display: "swap" });
 
 export const metadata: Metadata = {
-  // ponytail: à remplacer par l'URL Vercel définitive pour l'aperçu WhatsApp
+  // URL de production Vercel : sert aux URL absolues (aperçu WhatsApp de l'affiche).
   metadataBase: new URL("https://halloween-bde.vercel.app"),
   title: "Halloween du BDE · 31 octobre à l'EYA Centre",
   description: "La soirée Halloween du BDE Epitech Bénin, samedi 31 octobre dès 19h à l'EYA Centre. 23 masques à réserver sur WhatsApp.",

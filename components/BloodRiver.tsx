@@ -1,197 +1,169 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import { useEffect, useRef } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
-import { useGSAP } from "@gsap/react";
+import { programmeSang } from "@/components/sang/gl";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger, DrawSVGPlugin);
+// Filets de sang dans les deux marges : deux bandes WebGL fixes (même rendu que le hero).
+// Une perle glisse le long du mur en à-coups (colle, puis repart), laisse une traînée qui s'amincit et sèche.
 
-// Générateur pseudo-aléatoire à graine : même tracé à chaque visite.
-function graine(s: number) {
-  return () => {
-    s = (s + 0x6d2b79f5) | 0;
-    let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+type Point = { x: number; y: number; age: number };
+type Filet = { x0: number; x: number; y: number; t: number; base: number; f1: number; f2: number; f3: number; r0: number; vie: number; pts: Point[]; parti: boolean };
+type Cote = { cv: HTMLCanvasElement; gl: WebGLRenderingContext; N: number; U: (n: string) => WebGLUniformLocation | null; seg: Float32Array; ball: Float32Array; filets: Filet[]; prochain: number };
 
-// Un filet vertical qui ondule légèrement autour de x, de 0 à h.
-function filet(x: number, h: number, s: number, ampl: number) {
-  const r = graine(s);
-  let d = `M${x} 0`;
-  let px = x;
-  for (let y = 140; y < h + 140; y += 140) {
-    const nx = x + (r() - 0.5) * 2 * ampl;
-    d += ` Q${px + (r() - 0.5) * ampl} ${y - 70} ${nx.toFixed(1)} ${Math.min(y, h)}`;
-    px = nx;
-  }
-  return d;
-}
-
-// [côté, décalage depuis le bord en part de la marge, épaisseur, graine]
-const FILETS: ["g" | "d", number, number, number][] = [
-  ["g", 0.42, 6, 11],
-  ["g", 0.75, 3, 29],
-  ["d", 0.5, 5.5, 47],
-];
-// Éclaboussures : [filet, position verticale en part de la page]
-const TACHES: [number, number][] = [[0, 0.22], [2, 0.41], [1, 0.63], [2, 0.86]];
-// Perles le long des filets : [filet, position verticale en part de la page]
-const PERLES: [number, number][] = [[0, 0.09], [2, 0.16], [0, 0.34], [1, 0.47], [2, 0.55], [0, 0.71], [2, 0.74], [1, 0.92]];
-// Pointe du filet à 65 % de la hauteur d'écran : toujours visible pendant le défilement.
-const POINTE = 0.65;
-
-// Goutte en larme, pointe vers le haut (rattachée au filet), centre du rond en 0,0.
-const larme = (r: number) => `M0 ${-r * 2.2} C${r * 0.35} ${-r * 1.2} ${r} ${-r * 0.6} ${r} 0 A${r} ${r} 0 0 1 ${-r} 0 C${-r} ${-r * 0.6} ${-r * 0.35} ${-r * 1.2} 0 ${-r * 2.2}Z`;
+const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+const lisse = (p: number) => { const q = Math.min(1, Math.max(0, p)); return q * q * (3 - 2 * q); };
+const PAS = 10; // px entre deux points de traînée
 
 export default function BloodRiver() {
-  const root = useRef<HTMLDivElement>(null);
-  const [taille, setTaille] = useState({ w: 0, h: 0, m: 16 });
+  const gauche = useRef<HTMLCanvasElement>(null);
+  const droite = useRef<HTMLCanvasElement>(null);
 
-  useLayoutEffect(() => {
-    const parent = root.current?.parentElement;
-    if (!parent) return;
-    const mesure = () => {
-      const m = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--margin")) || 16;
-      setTaille({ w: parent.offsetWidth, h: parent.scrollHeight, m });
+  useEffect(() => {
+    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const cotes: Cote[] = [];
+    for (const cv of [gauche.current!, droite.current!]) {
+      const gl = cv.getContext("webgl", { premultipliedAlpha: true, antialias: false, alpha: true });
+      const ps = gl && programmeSang(gl);
+      if (!gl || !ps) { cv.style.display = "none"; continue; }
+      gl.uniform1f(ps.U("u_noband"), 1);
+      const cache = new Map<string, WebGLUniformLocation | null>();
+      const U = (n: string) => { if (!cache.has(n)) cache.set(n, ps.U(n)); return cache.get(n)!; };
+      cotes.push({ cv, gl, N: ps.N, U, seg: new Float32Array(ps.N * 4), ball: new Float32Array(ps.N * 3), filets: [], prochain: rnd(0.5, 2.5) });
+    }
+    if (!cotes.length) return;
+
+    let M = 0, H = 0, dpr = 1, maxFilets = 2, K = 10;
+    const taille = () => {
+      // Largeur de la marge réelle de la page (padding de .wrap).
+      const wrap = document.querySelector(".wrap");
+      M = wrap ? parseFloat(getComputedStyle(wrap).paddingLeft) || 16 : 16;
+      maxFilets = window.innerWidth < 640 ? 1 : 2;
+      for (const c of cotes) {
+        c.cv.style.width = `${M}px`;
+        H = c.cv.clientHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 640 ? 1 : 1.5);
+        c.cv.width = Math.round(M * dpr); c.cv.height = Math.round(H * dpr);
+        c.gl.viewport(0, 0, c.cv.width, c.cv.height);
+        // Budget du shader : K points (et donc K segments) par filet.
+        K = Math.max(4, Math.floor(c.N / maxFilets));
+      }
     };
-    mesure();
-    const ro = new ResizeObserver(mesure);
-    ro.observe(parent);
-    return () => ro.disconnect();
+
+    const nouveau = (y = -8): Filet => {
+      const x0 = rnd(M * .32, M * .68);
+      return { x0, x: x0, y, t: 0, base: rnd(40, 90), f1: rnd(0, 6.3), f2: rnd(0, 6.3), f3: rnd(0, 6.3), r0: window.innerWidth < 640 ? 3.5 : rnd(4, 5), vie: rnd(3, 5), pts: [{ x: x0, y, age: 0 }], parti: false };
+    };
+
+    let elan = 0; // petit surplus de vitesse quand on fait défiler (ballottement), retombe tout seul
+    const pas = (dt: number) => {
+      elan *= Math.exp(-dt * 3);
+      for (const c of cotes) {
+        c.prochain -= dt;
+        if (c.prochain <= 0 && c.filets.length < maxFilets) { c.filets.push(nouveau()); c.prochain = rnd(3, 7); }
+        for (const f of c.filets) {
+          f.t += dt;
+          for (const p of f.pts) p.age += dt;
+          if (f.parti) continue;
+          // Colle puis glisse : un bruit lisse décide, sous 0,4 la perle s'arrête presque.
+          const n = .5 + .3 * Math.sin(f.t * 1.3 + f.f1) + .2 * Math.sin(f.t * 3.1 + f.f2);
+          const g = lisse((n - .4) / .6);
+          f.y += (f.base * (.05 + 1.6 * g) + elan) * dt;
+          f.x = f.x0 + 2 * Math.sin(f.t * .7 + f.f3) * Math.min(1, M / 24);
+          const der = f.pts[f.pts.length - 1];
+          if (f.y - der.y >= PAS) { f.pts.push({ x: f.x, y: f.y, age: 0 }); if (f.pts.length > K) f.pts.shift(); }
+          if (f.y > H + 12) f.parti = true;
+        }
+        // Le filet disparaît quand sa traînée a fini de sécher.
+        c.filets = c.filets.filter((f) => !f.parti || f.pts.some((p) => p.age < f.vie));
+      }
+    };
+
+    const rendu = () => {
+      for (const c of cotes) {
+        let ns = 0, nb = 0;
+        const seg = (x: number, y0: number, y1: number, r: number) => { if (ns >= c.N || r <= .05) return; c.seg.set([x, Math.min(y0, y1), Math.max(y0, y1), r], ns * 4); ns++; };
+        for (const f of c.filets) {
+          const n = f.pts.length;
+          // Rayon : fin au plus ancien, plus épais près de la perle ; sèche en s'amincissant.
+          const rayon = (i: number) => (.8 + 1.4 * (n > 1 ? i / (n - 1) : 1)) * (1 - lisse(f.pts[i].age / f.vie));
+          for (let i = 0; i < n - 1; i++) seg((f.pts[i].x + f.pts[i + 1].x) / 2, f.pts[i].y, f.pts[i + 1].y, Math.min(rayon(i), rayon(i + 1)));
+          if (!f.parti) {
+            const der = f.pts[n - 1];
+            seg((der.x + f.x) / 2, der.y, f.y, Math.max(rayon(n - 1), 1.6));
+            // La perle grossit un peu quand elle colle.
+            if (nb < c.N) { c.ball.set([f.x, f.y, f.r0 * (1 + .12 * Math.sin(f.t * 2 + f.f1))], nb * 3); nb++; }
+          }
+        }
+        const { gl, U } = c;
+        gl.uniform2f(U("u_res"), M, H); gl.uniform1f(U("u_dpr"), dpr); gl.uniform1f(U("u_t"), 0);
+        gl.uniform1i(U("u_ns"), ns); gl.uniform1i(U("u_nb"), nb);
+        gl.uniform4fv(U("u_seg"), c.seg); gl.uniform3fv(U("u_ball"), c.ball);
+        gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
+    };
+
+    taille();
+
+    // La hauteur de page change (filtres, polices, images) : on recale les déclencheurs de défilement.
+    let tr = 0;
+    const ro = new ResizeObserver(() => { clearTimeout(tr); tr = window.setTimeout(() => ScrollTrigger.refresh(), 200); });
+    ro.observe(document.body);
+
+    if (reduit) {
+      // Image fixe : un filet immobile par côté.
+      for (const c of cotes) {
+        const f = nouveau(H * .42);
+        f.pts = Array.from({ length: K }, (_, i) => ({ x: f.x0, y: H * .42 - (K - 1 - i) * PAS * 2, age: 0 }));
+        c.filets = [f];
+      }
+      rendu();
+      return () => { ro.disconnect(); clearTimeout(tr); };
+    }
+
+    let raf = 0, last = 0, perdu = false, sy = window.scrollY;
+    const frame = (now: number) => {
+      raf = 0;
+      if (perdu || document.hidden) return;
+      if (window.innerWidth < 640 && now - last < 32) { raf = requestAnimationFrame(frame); return; } // ~30 fps sur téléphone
+      const dt = last ? Math.min((now - last) / 1000, .05) : 0;
+      last = now;
+      pas(dt); rendu();
+      raf = requestAnimationFrame(frame);
+    };
+    const relance = () => { if (!raf && !document.hidden && !perdu) { last = 0; raf = requestAnimationFrame(frame); } };
+    const onScroll = () => { const y = window.scrollY; elan = Math.min(120, elan + Math.abs(y - sy) * .6); sy = y; };
+    let tm = 0, lw = window.innerWidth, lh = window.innerHeight;
+    const onResize = () => {
+      clearTimeout(tm);
+      tm = window.setTimeout(() => {
+        if (window.innerWidth === lw && Math.abs(window.innerHeight - lh) < 160) return; // barre d'adresse mobile
+        lw = window.innerWidth; lh = window.innerHeight; taille();
+      }, 150);
+    };
+    const onLost = (e: Event) => { e.preventDefault(); perdu = true; for (const c of cotes) c.cv.style.display = "none"; };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", relance);
+    for (const c of cotes) c.cv.addEventListener("webglcontextlost", onLost);
+    relance();
+
+    return () => {
+      cancelAnimationFrame(raf); clearTimeout(tm); clearTimeout(tr); ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", relance);
+      for (const c of cotes) c.cv.removeEventListener("webglcontextlost", onLost);
+    };
   }, []);
 
-  const { w, h, m } = taille;
-  const traces = FILETS.map(([cote, part, ep, s]) => {
-    const x = cote === "g" ? m * part : w - m * part;
-    return { x, ep, d: filet(x, h, s, Math.max(1.5, m * 0.12)) };
-  });
-
-  useGSAP(
-    (_ctx, contextSafe) => {
-      if (!h) return;
-      const couches = gsap.utils.toArray<SVGPathElement>(".br-couche", root.current);
-      const chemins = gsap.utils.toArray<SVGPathElement>(".br-filet", root.current);
-      const tetes = gsap.utils.toArray<SVGGElement>(".br-tete", root.current);
-      const gouttes = gsap.utils.toArray<SVGPathElement>(".br-larme", root.current);
-      const chutes = gsap.utils.toArray<SVGCircleElement>(".br-chute", root.current);
-      const marques = gsap.utils.toArray<SVGElement>(".br-tache, .br-perle", root.current);
-      const seuils = [...TACHES, ...PERLES].map(([, y]) => y);
-      const mm = gsap.matchMedia();
-
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(couches, { drawSVG: "100%" });
-        gsap.set([...tetes, ...chutes], { autoAlpha: 0 });
-        gsap.set(marques, { scale: 1, transformOrigin: "50% 50%" });
-      });
-
-      mm.add("(prefers-reduced-motion: no-preference)", (mc) => {
-        const sur = <A extends unknown[]>(f: (...a: A) => void) => (...a: A) => { mc.add(() => f(...a)); };
-        // Rappels enveloppés par le contexte de matchMedia, pas par celui de useGSAP (sinon les deux
-        // contextes se contiennent l'un l'autre et GSAP boucle à l'infini au recalcul).
-        const longueurs = chemins.map((p) => p.getTotalLength());
-        // Table de points calculée une fois : pas de getPointAtLength à chaque image de défilement.
-        const table = chemins.map((c, k) => Array.from({ length: 257 }, (_, j) => c.getPointAtLength((j / 256) * longueurs[k])));
-        const pointes = chemins.map(() => ({ x: 0, y: 0 }));
-        const montrees = seuils.map(() => false);
-        gsap.set(marques, { scale: 0.3, autoAlpha: 0, transformOrigin: "50% 50%" });
-        gsap.set(chutes, { autoAlpha: 0 });
-        const montre = sur((k: number, oui: boolean) => {
-          gsap.to(marques[k], { scale: oui ? 1 : 0.3, autoAlpha: oui ? 1 : 0, duration: oui ? 0.5 : 0.2, ease: oui ? "back.out(2.5)" : "power3.out" });
-        });
-
-        // Part tracée : jusqu'à 65 % de l'écran courant, lissée.
-        const cible = () => Math.min(1, Math.max(0.01, (window.scrollY + window.innerHeight * POINTE) / h));
-        const etat = { p: cible() };
-        const applique = () => {
-          const p = etat.p;
-          gsap.set(couches, { drawSVG: `0% ${p * 100}%` });
-          chemins.forEach((_c, k) => {
-            const pt = table[k][Math.round(p * 256)];
-            pointes[k].x = pt.x; pointes[k].y = pt.y;
-            tetes[k].setAttribute("transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
-          });
-          seuils.forEach((y, k) => {
-            const oui = p >= y;
-            if (oui !== montrees[k]) { montrees[k] = oui; montre(k, oui); }
-          });
-        };
-        applique();
-        // On garde la référence du lissage et on le remplace nous-mêmes : `overwrite: true` parcourt
-        // toutes les animations en cours à chaque événement de défilement (débordement de pile).
-        let lisse: gsap.core.Tween | null = null;
-        ScrollTrigger.create({
-          trigger: document.documentElement, start: "top top", end: "bottom bottom",
-          onUpdate: () => { lisse?.kill(); lisse = gsap.to(etat, { p: cible(), duration: 0.6, ease: "power2.out", onUpdate: applique }); },
-        });
-
-        // La larme de tête gonfle doucement.
-        gsap.to(gouttes, { scaleY: 1.25, scaleX: 1.1, transformOrigin: "50% 0%", duration: 1.6, ease: "sine.inOut", yoyo: true, repeat: -1, stagger: 0.4 });
-
-        // De temps en temps, une goutte se détache de la pointe et glisse avant de s'effacer.
-        const detache = sur((k: number) => {
-          const g = chutes[k];
-          const { x, y } = pointes[k];
-          gsap.timeline({ onComplete: () => { gsap.delayedCall(gsap.utils.random(1.5, 4), detache, [k]); } })
-            .set(g, { attr: { cx: x, cy: y + traces[k].ep * 0.9 }, y: 0, scaleY: 1, autoAlpha: 1, transformOrigin: "50% 0%" })
-            .to(g, { y: gsap.utils.random(40, 90), scaleY: 1.6, duration: 1.1, ease: "power2.in" })
-            .to(g, { autoAlpha: 0, duration: 0.35 }, "-=0.35");
-        });
-        chutes.forEach((_g, k) => gsap.delayedCall(gsap.utils.random(0.8, 3), detache, [k]));
-      });
-      // La hauteur de page a changé (filtre, polices, images) : on recale tous les déclencheurs.
-      ScrollTrigger.refresh();
-    },
-    { scope: root, dependencies: [w, h, m], revertOnUpdate: true },
-  );
-
+  const bande = "pointer-events-none fixed top-0 z-0 block h-lvh w-4";
   return (
-    <div ref={root} aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      {h > 0 && (
-        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="absolute left-0 top-0">
-          {traces.map((t, k) => (
-            <g key={k} strokeLinecap="round" fill="none">
-              {/* sous-couche sombre, filet, reflet brillant décalé */}
-              <path className="br-couche" d={t.d} stroke="var(--blood-deep)" strokeWidth={t.ep + 2} />
-              <path className="br-couche br-filet" d={t.d} stroke="var(--blood)" strokeWidth={t.ep} />
-              <path className="br-couche" d={t.d} stroke="rgba(255,140,120,.35)" strokeWidth={Math.max(0.8, t.ep * 0.22)} transform="translate(-1 0)" />
-            </g>
-          ))}
-          {PERLES.map(([f, y], k) => {
-            const r = traces[f].ep * (0.75 + (k % 3) * 0.12);
-            return (
-              <g key={k} className="br-perle">
-                <ellipse cx={traces[f].x} cy={y * h} rx={r} ry={r * 1.5} fill="var(--blood)" />
-                <circle cx={traces[f].x - r * 0.35} cy={y * h - r * 0.5} r={r * 0.3} fill="rgba(255,140,120,.35)" />
-              </g>
-            );
-          })}
-          {TACHES.map(([f, y], k) => {
-            const cx = traces[f].x;
-            const cy = y * h;
-            return (
-              <g key={k} className="br-tache" fill="var(--blood)">
-                <circle cx={cx} cy={cy} r={traces[f].ep * 1.3} />
-                <circle cx={cx + (f === 2 ? -9 : 8)} cy={cy - 6} r={2.2} />
-                <circle cx={cx + (f === 2 ? -5 : 5)} cy={cy + 10} r={1.6} />
-                <circle cx={cx + (f === 2 ? 6 : -6)} cy={cy + 4} r={1.2} />
-              </g>
-            );
-          })}
-          {traces.map((t, k) => (
-            <circle key={k} className="br-chute" cx={t.x} cy={0} r={t.ep * 0.55} fill="var(--blood)" />
-          ))}
-          {traces.map((t, k) => (
-            <g key={k} className="br-tete" transform={`translate(${t.x} 0)`}>
-              <path className="br-larme" d={larme(t.ep * 0.95)} fill="var(--blood)" />
-              <circle cx={-t.ep * 0.35} cy={-t.ep * 0.2} r={Math.max(0.8, t.ep * 0.22)} fill="rgba(255,150,130,.45)" />
-            </g>
-          ))}
-        </svg>
-      )}
-    </div>
+    <>
+      <canvas ref={gauche} aria-hidden="true" className={`${bande} left-0`} />
+      <canvas ref={droite} aria-hidden="true" className={`${bande} right-0`} />
+    </>
   );
 }

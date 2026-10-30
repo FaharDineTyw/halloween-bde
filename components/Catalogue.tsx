@@ -56,7 +56,8 @@ export default function Catalogue() {
     placeBarre(bouton);
     const cartes = gsap.utils.toArray<HTMLElement>(".cat-carte", scope.current);
     const etat = Flip.getState(cartes);
-    // ponytail: hidden posé directement sur le DOM (React ne gère pas cet attribut ici) pour que Flip mesure avant/après.
+    // ponytail: hidden posé directement sur le DOM (hors React) pour que Flip mesure avant/après ; si un rendu React se met
+    // à gérer `hidden` sur ces <li>, passer le filtrage dans l'état React et lancer Flip dans un useLayoutEffect.
     cartes.forEach((c) => { c.hidden = id !== "tous" && c.dataset.style !== id; });
     // Fin du filtre : toute carte visible doit être pleinement affichée (même si son entrée au défilement est déjà passée).
     const fin = () => {
