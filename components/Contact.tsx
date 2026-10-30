@@ -12,7 +12,7 @@ const ETAPES = [
 export default function Contact() {
   return (
     <section id="reserver" aria-labelledby="reserver-titre" className="wrap bg-ink pb-[var(--section-y)] text-bg">
-      <div className="grid gap-8 border-t border-bg/15 pt-[var(--section-y)] lg:grid-cols-12 lg:gap-8">
+      <div className="grid gap-8 pt-[var(--section-y)] lg:grid-cols-12 lg:gap-8">
         <h2 id="reserver-titre" className="font-display uppercase leading-[1] text-accent text-[length:var(--step-head)] lg:col-span-5">
           Réserve-le<br />avant samedi
         </h2>
