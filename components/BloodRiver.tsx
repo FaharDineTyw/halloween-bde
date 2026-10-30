@@ -143,7 +143,7 @@ export default function BloodRiver() {
   );
 
   return (
-    <div ref={root} aria-hidden="true" className="pointer-events-none absolute inset-0 z-[5] overflow-hidden">
+    <div ref={root} aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       {h > 0 && (
         <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="absolute left-0 top-0">
           {traces.map((t, k) => (

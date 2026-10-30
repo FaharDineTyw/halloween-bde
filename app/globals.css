@@ -32,7 +32,17 @@
   --font-sans: var(--font-hanken);
 }
 
-html { background: var(--bg); color-scheme: dark; }
+html {
+  background: var(--bg); color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--blood-deep) var(--bg);
+  caret-color: var(--blood);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+a, button, [role="button"] { touch-action: manipulation; }
+button, [role="button"], .btn { user-select: none; -webkit-user-select: none; }
+a { text-underline-offset: .2em; }
 body {
   background: var(--bg);
   color: var(--ink);
@@ -53,9 +63,9 @@ body {
   display: inline-flex; align-items: center; justify-content: center; gap: .5em;
   background: var(--blood); color: var(--accent-ink); font-weight: 500;
   padding: .85em 1.4em; border-radius: 0; text-decoration: none;
-  transition: background-color .2s, transform .15s;
+  transition: background-color .2s ease, transform .14s var(--ease-out);
 }
-.btn:hover { background: #d4140f; }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: #d4140f; } }
 .btn:active { transform: scale(.97); }
 
 /* Traitement unique des photos de masques : bichromie sang (fond blanc -> rouge). */
@@ -64,10 +74,6 @@ body {
 .duo[data-vrai="true"] { background: #fff; }
 .duo[data-vrai="true"] img { filter: none; mix-blend-mode: normal; }
 
-/* Grain de pellicule : texture fixe, aucun redessin par image. */
-.grain { position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .09;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 
 /* Néon qui grésille : moins de 3 éclats par seconde (WCAG 2.3.1). */
 @keyframes gresille {

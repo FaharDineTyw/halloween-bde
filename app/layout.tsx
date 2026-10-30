@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
@@ -29,12 +29,18 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  colorScheme: "dark",
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={`${zodiak.variable} ${hanken.variable}`}>
       <body>
         {children}
-        <div className="grain" aria-hidden="true" />
       </body>
     </html>
   );

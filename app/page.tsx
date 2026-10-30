@@ -17,7 +17,7 @@ export default function Page() {
         {/* Sang qui coule le long de la page, posé dans les marges */}
         <BloodRiver />
         <Header />
-        <main id="haut">
+        <main id="haut" className="relative">
           <Hero />
           <Showcase />
           <Intro />

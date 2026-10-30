@@ -94,7 +94,7 @@ export default function Catalogue() {
 
   return (
     <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative py-28 md:py-40">
-      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[8vw] md:text-[clamp(36px,5vw,72px)]">
+      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[7.4vw] md:text-[clamp(36px,5vw,72px)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
       </h2>
@@ -123,7 +123,7 @@ export default function Catalogue() {
               type="button"
               onClick={(e) => ouvre(i, e.currentTarget)}
               aria-label={`Agrandir le masque N°${x.num}, ${x.nom}`}
-              className="relative block aspect-[4/5] w-full cursor-zoom-in overflow-hidden rounded-[4px] bg-[#0d0a09]"
+              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-[#0d0a09] transition-transform duration-[120ms] ease-out active:scale-[.98]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -138,18 +138,18 @@ export default function Catalogue() {
               <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[4px] shadow-[inset_0_0_48px_14px_rgba(13,10,9,.55)]" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
               <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-blood transition-transform duration-500 [@media(pointer:fine)]:group-hover:scale-x-100" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
             </button>
-            <div className="mt-3 flex items-baseline justify-between gap-3">
+            <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <div className="min-w-0">
                 <span className="font-display text-[15px] text-ember">N°{x.num}</span>
-                <p className="truncate text-[16px] font-medium md:text-[17px]">{x.nom}</p>
-                <p className="text-[15px] text-muted">{x.prix} · {NOM_STYLE[x.style]}</p>
+                <p className="line-clamp-2 text-[16px] font-medium leading-snug md:text-[17px]">{x.nom}</p>
+                <p className="flex flex-wrap gap-x-2 text-[15px] text-muted"><span>{x.prix}</span><span>{NOM_STYLE[x.style]}</span></p>
               </div>
               <a
                 href={waLien(x)}
                 target="_blank"
                 rel="noopener"
                 aria-label={`Réserver le masque N°${x.num}, ${x.nom}, sur WhatsApp`}
-                className="shrink-0 bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[15px] text-ember transition-[background-size] duration-300 hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
+                className="self-start sm:self-auto shrink-0 touch-manipulation bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 text-[15px] text-ember transition-[background-size] duration-300 hover:bg-[length:100%_1px] focus-visible:bg-[length:100%_1px]" /* taste-skill-ignore */
               >
                 Réserver
               </a>

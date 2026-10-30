@@ -40,7 +40,7 @@ export default function Intro() {
   );
 
   return (
-    <section ref={root} aria-labelledby="intro-titre" className="wrap py-[22vh]">
+    <section ref={root} aria-labelledby="intro-titre" className="wrap py-[clamp(72px,12vh,140px)]">
       <h2 id="intro-titre" className="sr-only">Les styles de masques</h2>
       <p className="font-display mx-auto max-w-full text-left text-[24px] font-light leading-[1.2] md:w-[70vw] md:text-center md:text-[clamp(22px,3vw,36px)]">
         {MORCEAUX.map(([texte, i, ponct, cacheMobile]) => {

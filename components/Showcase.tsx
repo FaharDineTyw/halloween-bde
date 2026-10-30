@@ -96,12 +96,12 @@ export default function Showcase() {
       <div className="flex w-full flex-col items-center gap-10 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-x-12 lg:gap-y-14">
         {/* Le titre se répartit autour de l'éventail : display contents sur grand écran. */}
         <h2 id="soiree-titre" className="contents">
-          <span className={`sc-date ${titre} block text-center text-[6.8vw] leading-none lg:order-1 lg:text-left lg:text-[clamp(40px,4.2vw,84px)]`}>
+          <span className={`sc-date ${titre} relative z-10 block text-center text-[6.8vw] leading-none lg:order-1 lg:text-left lg:text-[clamp(40px,4.2vw,84px)]`}>
             <span className="lg:hidden">Samedi 31 octobre</span>
             <span className="hidden lg:block">Samedi</span>
             <span className="hidden lg:block">31 oct.</span>
           </span>
-          <span className={`sc-lieu ${titre} order-3 block text-center text-[6.8vw] leading-none lg:text-right lg:text-[clamp(40px,4.2vw,84px)]`}>
+          <span className={`sc-lieu ${titre} relative z-10 order-3 block text-center text-[6.8vw] leading-none lg:text-right lg:text-[clamp(40px,4.2vw,84px)]`}>
             <span className="lg:hidden">EYA Centre, dès 19h</span>
             <span className="hidden lg:block">EYA Centre</span>
             <span className="hidden lg:block">dès 19h</span>
