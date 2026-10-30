@@ -1,4 +1,5 @@
 import { waLien } from "@/lib/masques";
+import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
 
 export default function Header() {
   return (
@@ -10,7 +11,7 @@ export default function Header() {
       <nav aria-label="Navigation principale" className="flex items-center gap-5 text-[length:var(--step-small)] md:gap-8 md:text-[length:var(--step-body)]">
         <a href="#masques" className="hidden underline-offset-4 hover:underline sm:inline">Les masques</a>
         <a href="#soiree" className="hidden underline-offset-4 hover:underline sm:inline">La soirée</a>
-        <a href={waLien()} target="_blank" rel="noopener" className="btn">Réserver</a>
+        <a href={waLien()} target="_blank" rel="noopener" aria-label="Réserver un masque sur WhatsApp" className="btn btn-sm"><IconeWhatsApp />Réserver</a>
       </nav>
     </header>
   );

@@ -6,6 +6,7 @@ import { Flip } from "gsap/Flip";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, STYLES, waLien, type Style } from "@/lib/masques";
+import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, Flip);
 
@@ -186,7 +187,7 @@ export default function Catalogue() {
               <p id="cat-v-titre" className="text-[length:var(--step-lead)] font-medium">{m.nom}</p>
               <p className="text-[length:var(--step-small)] text-muted">{m.prix}</p>
             </div>
-            <a href={waLien(m)} target="_blank" rel="noopener" className="btn w-full">Réserver le n°{m.num} sur WhatsApp</a>
+            <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="btn w-full"><IconeWhatsApp />Réserver le n°{m.num}</a>
             <div className="flex justify-between text-[length:var(--step-small)] text-muted">
               <button type="button" onClick={() => voisin(-1)} className="hover:text-ink">Masque précédent</button>
               <button type="button" onClick={() => voisin(1)} className="hover:text-ink">Masque suivant</button>

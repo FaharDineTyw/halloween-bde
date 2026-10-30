@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, WHATSAPP_AFFICHE, waLien } from "@/lib/masques";
+import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -74,7 +75,7 @@ export default function Contact() {
           </ol>
 
           <div data-entree className="mt-7 md:mt-10">
-            <a href={waLien()} target="_blank" rel="noopener" className="btn">Réserver sur WhatsApp</a>
+            <a href={waLien()} target="_blank" rel="noopener" className="btn"><IconeWhatsApp />Réserver sur WhatsApp</a>
           </div>
         </div>
 

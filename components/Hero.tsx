@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, waLien } from "@/lib/masques";
 import SangGL from "@/components/hero/SangGL";
+import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -126,8 +127,8 @@ export default function Hero() {
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
             </button>
           </div>
-          <a href={waLien(m)} target="_blank" rel="noopener" className="btn w-full md:w-auto">
-            Réserver le n°{m.num} sur WhatsApp
+          <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="btn w-full md:w-auto">
+            <IconeWhatsApp />Réserver le n°{m.num}
           </a>
         </div>
       </div>
