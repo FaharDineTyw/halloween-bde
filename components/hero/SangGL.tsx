@@ -46,7 +46,7 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
     };
 
     const nouvelleCoulee = (d: Drip, premiere = false) => {
-      d.Lmax = coulees ? d.Lmin + rnd(H * .05, H * .12) : rnd(H * .16, H * .42); d.rMax = rnd(d.w * 2, d.w * 2.8);
+      d.Lmax = coulees ? Math.min(H * .9, d.Lmin + rnd(H * .06, H * .14)) : rnd(H * .16, H * .42); d.rMax = rnd(d.w * 2, d.w * 2.8);
       d.phase = 0; d.t = 0; d.dur = coulees ? rnd(2, 4) : rnd(1.8, 3.6);
       if (premiere) { d.phase = 3; d.dur = rnd(0, 1.2); }
     };
@@ -62,10 +62,10 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
       let cumul = 0;
       drips = Array.from({ length: n }, (_, k) => {
         cumul += ecarts[k];
-        const w = coulees ? rnd(3, 6) : Math.random() < .25 ? rnd(6.5, 9) : rnd(3, 6);
-        const d: Drip = { x: (cumul / somme) * W, w, L: 0, Lmin: coulees ? rnd(H * .28, H * .5) : rnd(H * .04, H * .12), Lmax: 0, r: 0, rMin: w * 1.35, rMax: 0, phase: 3, t: 0, dur: 0, fil: 0, finFil: 0 };
+        const w = coulees ? rnd(6, 10) : Math.random() < .25 ? rnd(6.5, 9) : rnd(3, 6);
+        const d: Drip = { x: (cumul / somme) * W, w, L: 0, Lmin: coulees ? rnd(H * .55, H * .78) : rnd(H * .04, H * .12), Lmax: 0, r: 0, rMin: w * 1.35, rMax: 0, phase: 3, t: 0, dur: 0, fil: 0, finFil: 0 };
         d.L = d.Lmin; d.r = d.rMin; nouvelleCoulee(d, true);
-        if (reduit) { d.L = coulees ? rnd(H * .3, H * .55) : rnd(H * .08, H * .22); d.r = d.w * 2.4; }
+        if (reduit) { d.L = coulees ? rnd(H * .6, H * .85) : rnd(H * .08, H * .22); d.r = d.w * 2.4; }
         return d;
       });
       drops = []; bosses = [];
