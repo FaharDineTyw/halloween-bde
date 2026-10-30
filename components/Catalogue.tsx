@@ -115,7 +115,7 @@ export default function Catalogue() {
             data-filtre={f.id}
             aria-pressed={filtre === f.id}
             onClick={(e) => filtrer(f.id, e.currentTarget)}
-            className="text-[#5b5758] transition-colors duration-300 hover:text-bg aria-pressed:text-accent-deep"
+            className="inline-flex min-h-11 items-end text-[#5b5758] transition-colors duration-200 hover:text-bg aria-pressed:text-accent-deep"
           >
             {f.nom}
           </button>
@@ -148,14 +148,14 @@ export default function Catalogue() {
               <div className="min-w-0">
                 <span className="flex items-center gap-1.5 font-display text-[length:var(--step-small)] text-accent-deep"><Bouton4Trous size={18} />N°{x.num}</span>
                 <p className="line-clamp-2 text-[length:var(--step-body)] font-medium leading-snug">{x.nom}</p>
-                <p className="text-[length:var(--step-small)] text-[#5b5758]">{x.prix}</p>
+                <p className="whitespace-nowrap tabular-nums text-[length:var(--step-small)] text-[#5b5758]">{x.prix}</p>
               </div>
               <a
                 href={waLien(x)}
                 target="_blank"
                 rel="noopener"
                 aria-label={`Réserver le masque N°${x.num}, ${x.nom}, sur WhatsApp`}
-                className="self-start sm:self-auto shrink-0 touch-manipulation underline decoration-transparent decoration-1 underline-offset-[0.25em] text-[length:var(--step-small)] text-accent-deep transition-[text-decoration-color] duration-200 ease-out hover:decoration-current focus-visible:decoration-current"
+                className="inline-flex min-h-11 items-center self-start sm:self-auto shrink-0 touch-manipulation underline decoration-transparent decoration-1 underline-offset-[0.25em] text-[length:var(--step-small)] text-accent-deep transition-[text-decoration-color] duration-200 ease-out hover:decoration-current focus-visible:decoration-current"
               >
                 Réserver
               </a>
@@ -172,7 +172,7 @@ export default function Catalogue() {
         onKeyDown={(e) => { if (e.key === "ArrowRight") voisin(1); if (e.key === "ArrowLeft") voisin(-1); }}
         onPointerDown={(e) => { depart.current = e.clientX; }}
         onPointerUp={(e) => { const dx = e.clientX - depart.current; if (Math.abs(dx) > 50) voisin(dx < 0 ? 1 : -1); }}
-        className="m-auto w-[min(480px,calc(100%-32px))] bg-transparent p-0 text-ink backdrop:bg-black/85"
+        className="m-auto w-[min(480px,calc(100%-32px))] overscroll-contain bg-transparent p-0 text-ink backdrop:bg-black/85"
       >
         <div className="cat-v-boite rounded-[4px] bg-surface">
           <div className="relative overflow-hidden rounded-t-[4px] bg-surface">
@@ -184,12 +184,12 @@ export default function Catalogue() {
             <div>
               <span className="flex items-center gap-1.5 font-display text-[length:var(--step-small)] text-accent"><Bouton4Trous size={18} />N°{m.num}</span>
               <p id="cat-v-titre" className="text-[length:var(--step-lead)] font-medium">{m.nom}</p>
-              <p className="text-[length:var(--step-small)] text-muted">{m.prix}</p>
+              <p className="whitespace-nowrap tabular-nums text-[length:var(--step-small)] text-muted">{m.prix}</p>
             </div>
             <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="btn w-full"><IconeWhatsApp />Réserver le n°{m.num}</a>
             <div className="flex justify-between text-[length:var(--step-small)] text-muted">
-              <button type="button" onClick={() => voisin(-1)} className="hover:text-ink">Masque précédent</button>
-              <button type="button" onClick={() => voisin(1)} className="hover:text-ink">Masque suivant</button>
+              <button type="button" onClick={() => voisin(-1)} className="min-h-11 px-2 touch-manipulation transition-transform duration-150 hover:text-ink active:scale-[.97]">Masque précédent</button>
+              <button type="button" onClick={() => voisin(1)} className="min-h-11 px-2 touch-manipulation transition-transform duration-150 hover:text-ink active:scale-[.97]">Masque suivant</button>
             </div>
           </div>
         </div>

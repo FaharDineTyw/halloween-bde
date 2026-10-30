@@ -22,9 +22,9 @@ export default function Hero() {
     () => {
       const mm = gsap.matchMedia();
       mm.add(
-        { anime: "(prefers-reduced-motion: no-preference)", souris: "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)" },
+        { anime: "(prefers-reduced-motion: no-preference)", porte: "(min-height: 600px) and (prefers-reduced-motion: no-preference)", souris: "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)" },
         (mc) => {
-          const { anime, souris } = mc.conditions as { anime: boolean; souris: boolean };
+          const { anime, porte, souris } = mc.conditions as { anime: boolean; porte: boolean; souris: boolean };
           if (!anime) return;
           const stage = scene.current!;
           const voyage = stage.querySelector<HTMLElement>(".a-voyage")!;
@@ -38,7 +38,9 @@ export default function Hero() {
 
           // Boucles : la clé se balance, le fantôme cligne. En pause hors écran.
           const boucles = [
-            gsap.fromTo(".a-balance", { rotation: -4 }, { rotation: 4, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: -1, transformOrigin: "50% 0%" }),
+            // Le pendule s'amortit puis s'arrête (pas de boucle infinie).
+            gsap.fromTo(".a-balance", { rotation: -4 }, { rotation: 4, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: 5, transformOrigin: "50% 0%",
+              onComplete: () => { gsap.to(".a-balance", { rotation: 0, duration: 1.4, ease: "sine.out" }); } }),
             gsap.timeline({ repeat: -1, repeatDelay: 3.2 })
               .to(".fantome-yeux", { scaleY: 0.1, transformOrigin: "50% 50%", duration: 0.08, ease: "power2.out" })
               .to(".fantome-yeux", { scaleY: 1, duration: 0.14, ease: "power2.out" })
@@ -58,12 +60,14 @@ export default function Hero() {
             quitte = () => window.removeEventListener("pointermove", bouge);
           }
 
-          // Scène épinglée : la clé descend au centre de la porte, tourne (petit « clic »), la porte s'ouvre.
+          // Scène épinglée (écrans assez hauts seulement : en dessous, l'affiche reste statique et défilable).
+          // La clé descend au centre de la porte, tourne (petit « clic »), la porte s'ouvre.
+          if (!porte) return () => quitte();
           gsap.set(autre, { "--porte": 0 });
           gsap.set(".a-porte", { scale: 0.9 });
           gsap.timeline({
             defaults: { ease: "none" },
-            scrollTrigger: { trigger: stage, start: "top top", end: "+=150%", pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true },
+            scrollTrigger: { trigger: stage, start: "top top", end: "+=110%", pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true },
           })
             .to(voyage, { y: () => stage.clientHeight * 0.55 - (voyage.offsetTop + voyage.offsetHeight / 2), scale: 0.78, duration: 0.35, ease: "power2.inOut" })
             .to(".a-porte", { autoAlpha: 1, scale: 1, duration: 0.15, ease: "power2.out" }, 0.25)
@@ -102,10 +106,10 @@ export default function Hero() {
       </h1>
 
       {/* La clé qui pend : voyage (défilement) > penche (pointeur) > balance (pendule). */}
-      <div className="a-voyage absolute left-1/2 top-[38svh] z-20 -translate-x-1/2 md:top-[40svh]" style={{ transformStyle: "preserve-3d" }}>
+      <div className="a-voyage absolute left-1/2 top-[38svh] z-20 -translate-x-1/2 max-[359px]:top-[32svh] md:top-[40svh] [@media(max-height:500px)]:hidden" style={{ transformStyle: "preserve-3d" }}>
         <div className="a-penche origin-top">
           <div className="a-balance origin-top">
-            <Cle className="h-[26svh] w-auto md:h-[30svh]" />
+            <Cle className="h-[26svh] w-auto max-[359px]:h-[18svh] md:h-[30svh]" />
           </div>
         </div>
       </div>
@@ -114,22 +118,22 @@ export default function Hero() {
       <Porte className="a-porte pointer-events-none invisible absolute left-1/2 top-[55%] z-10 h-auto w-[28vmin] -translate-x-1/2 -translate-y-1/2 opacity-0" />
 
       {/* Infos posées comme sur l'affiche. */}
-      <p className={`${info} absolute left-[var(--margin)] top-[50%] z-10 text-[clamp(15px,2.2vw,34px)]`}>
+      <p className={`${info} absolute left-[var(--margin)] top-[50%] z-10 max-md:hidden text-[clamp(15px,2.2vw,34px)]`}>
         Portez vos<br />déguisements
       </p>
-      <p className={`${info} absolute right-[var(--margin)] top-[50%] z-10 text-right text-[clamp(15px,2.2vw,34px)]`}>
+      <p className={`${info} absolute right-[var(--margin)] top-[50%] z-10 text-right max-md:hidden text-[clamp(15px,2.2vw,34px)]`}>
         <Epingle className="mb-1 ml-auto inline-block h-[1em] w-[1em] align-[-0.1em]" /> EYA<br />Centre
       </p>
 
       <div className="wrap absolute inset-x-0 bottom-6 z-10 grid items-end gap-5 md:bottom-10 md:grid-cols-2">
         <div className="a-info order-2 flex flex-col items-start gap-4 md:order-1">
-          <p className="max-w-[26ch] text-[length:var(--step-body)] text-ink">La soirée Halloween du BDE Epitech Bénin.</p>
-          <a href={waLien()} target="_blank" rel="noopener" className="btn w-full md:w-auto">
+          <p className="max-w-[26ch] text-[length:var(--step-body)] text-ink">La soirée Halloween du BDE Epitech Bénin. 23 masques à réserver.</p>
+          <a href={waLien()} target="_blank" rel="noopener" className="btn w-full max-[359px]:text-[length:var(--step-small)] md:w-auto">
             <IconeWhatsApp />Réserver un masque
           </a>
         </div>
         <p className={`${info} order-1 text-right md:order-2`}>
-          <span className="block text-[clamp(14px,1.6vw,24px)]">À partir de 19h</span>
+          <span className="block text-[clamp(14px,1.6vw,24px)]">Samedi, dès 19h<span className="md:hidden"> · EYA Centre</span></span>
           <span className="block normal-case text-[clamp(4rem,13vw,24svh)] leading-[0.8]">31 oct</span>
         </p>
       </div>

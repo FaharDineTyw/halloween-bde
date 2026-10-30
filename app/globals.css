@@ -69,7 +69,7 @@ body {
 
 /* Bouton du site : orange de l'affiche, capitales serif comme l'affiche, bord bas qui coule. */
 .btn {
-  position: relative; isolation: isolate;
+  position: relative; isolation: isolate; white-space: nowrap;
   display: inline-flex; align-items: center; justify-content: center; gap: .6em;
   min-height: 52px; padding: 0 1.5em;
   background: var(--accent); color: var(--accent-ink);
@@ -114,3 +114,7 @@ body {
   /* Mouvement réduit = plus doux, pas zéro : on garde les fondus courts, on coupe le déplacement. */
   *, *::before, *::after { transition-duration: 150ms !important; transition-property: opacity, color, background-color !important; animation-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Pas de défilement de la page derrière la visionneuse ; titres sur deux lignes équilibrées. */
+html:has(dialog[open]) { overflow: hidden; }
+h2 { text-wrap: balance; }

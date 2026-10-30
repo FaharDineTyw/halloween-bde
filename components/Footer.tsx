@@ -46,7 +46,6 @@ export default function Footer() {
           <img src="/assets/logo-bde.svg" alt="Bureau des Étudiants Epitech Bénin" width={76} height={48} loading="lazy" className="h-10 w-auto md:h-12" />
           <nav aria-label="Pied de page" className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[length:var(--step-body)]">
             <a href="#masques" className={lien}>Les masques</a>
-            <a href="#haut" className={lien}>La soirée</a>
             <a href="#reserver" className={lien}>Réserver</a>
           </nav>
           <div className="flex flex-col items-center gap-2 text-[length:var(--step-small)]">

@@ -34,7 +34,7 @@ export const MASQUES: Masque[] = LISTE.map(([nom, style], i) => {
 
 export function waLien(m?: Masque) {
   const texte = m
-    ? `Salut ! Je veux réserver le masque N°${m.num} (${m.nom}) pour la soirée Halloween du BDE.`
-    : "Salut ! Je veux réserver un masque pour la soirée Halloween du BDE.";
+    ? `Salut ! Je veux réserver le masque N°${m.num} (${m.nom}) pour la soirée Halloween du 31 octobre. Je m'appelle `
+    : "Salut ! Je veux réserver un masque pour la soirée Halloween du 31 octobre. Je m'appelle ";
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texte)}`;
 }
