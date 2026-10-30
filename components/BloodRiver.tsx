@@ -7,8 +7,8 @@ import { programmeSang } from "@/components/sang/gl";
 // Filets de sang dans les deux marges : deux bandes WebGL fixes (même rendu que le hero).
 // Une perle glisse le long du mur en à-coups (colle, puis repart), laisse une traînée qui s'amincit et sèche.
 
-type Point = { x: number; y: number; age: number };
-type Filet = { x0: number; x: number; y: number; t: number; base: number; f1: number; f2: number; f3: number; r0: number; vie: number; pts: Point[]; parti: boolean };
+type Point = { x: number; y: number; age: number; w: number; perle?: boolean };
+type Filet = { x0: number; x: number; y: number; t: number; base: number; f1: number; f2: number; f3: number; r0: number; vie: number; pts: Point[]; parti: boolean; colle: number };
 type Cote = { cv: HTMLCanvasElement; gl: WebGLRenderingContext; N: number; U: (n: string) => WebGLUniformLocation | null; seg: Float32Array; ball: Float32Array; filets: Filet[]; prochain: number };
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -52,7 +52,7 @@ export default function BloodRiver() {
 
     const nouveau = (y = -8): Filet => {
       const x0 = rnd(M * .32, M * .68);
-      return { x0, x: x0, y, t: 0, base: rnd(40, 90), f1: rnd(0, 6.3), f2: rnd(0, 6.3), f3: rnd(0, 6.3), r0: window.innerWidth < 640 ? 3.5 : rnd(4, 5), vie: rnd(3, 5), pts: [{ x: x0, y, age: 0 }], parti: false };
+      return { x0, x: x0, y, t: 0, base: rnd(40, 90), f1: rnd(0, 6.3), f2: rnd(0, 6.3), f3: rnd(0, 6.3), r0: window.innerWidth < 640 ? 3.5 : rnd(4, 5), vie: rnd(3, 5), pts: [{ x: x0, y, age: 0, w: 1 }], parti: false, colle: 0 };
     };
 
     let elan = 0; // petit surplus de vitesse quand on fait défiler (ballottement), retombe tout seul
@@ -70,8 +70,11 @@ export default function BloodRiver() {
           const g = lisse((n - .4) / .6);
           f.y += (f.base * (.05 + 1.6 * g) + elan) * dt;
           f.x = f.x0 + 2 * Math.sin(f.t * .7 + f.f3) * Math.min(1, M / 24);
+          f.colle = g < .15 ? f.colle + dt : 0;
           const der = f.pts[f.pts.length - 1];
-          if (f.y - der.y >= PAS) { f.pts.push({ x: f.x, y: f.y, age: 0 }); if (f.pts.length > K) f.pts.shift(); }
+          // Là où la perle est restée collée longtemps, le sang s'accumule en une petite perle sur la traînée.
+          if (f.colle > .7 && !der.perle) der.perle = true;
+          if (f.y - der.y >= PAS) { f.pts.push({ x: f.x, y: f.y, age: 0, w: rnd(.65, 1.35) }); if (f.pts.length > K) f.pts.shift(); }
           if (f.y > H + 12) f.parti = true;
         }
         // Le filet disparaît quand sa traînée a fini de sécher.
@@ -79,6 +82,7 @@ export default function BloodRiver() {
       }
     };
 
+    let temps = 0; // horloge du bruit des contours
     const rendu = () => {
       for (const c of cotes) {
         let ns = 0, nb = 0;
@@ -86,8 +90,10 @@ export default function BloodRiver() {
         for (const f of c.filets) {
           const n = f.pts.length;
           // Rayon : fin au plus ancien, plus épais près de la perle ; sèche en s'amincissant.
-          const rayon = (i: number) => (.8 + 1.4 * (n > 1 ? i / (n - 1) : 1)) * (1 - lisse(f.pts[i].age / f.vie));
+          // Largeur irrégulière le long de la traînée (w par point), comme un vrai filet qui coule sur un mur.
+          const rayon = (i: number) => (.8 + 1.4 * (n > 1 ? i / (n - 1) : 1)) * f.pts[i].w * (1 - lisse(f.pts[i].age / f.vie));
           for (let i = 0; i < n - 1; i++) seg((f.pts[i].x + f.pts[i + 1].x) / 2, f.pts[i].y, f.pts[i + 1].y, Math.min(rayon(i), rayon(i + 1)));
+          for (let i = 0; i < n; i++) if (f.pts[i].perle && nb < c.N - 2) { c.ball.set([f.pts[i].x, f.pts[i].y, rayon(i) * 1.7], nb * 3); nb++; }
           if (!f.parti) {
             const der = f.pts[n - 1];
             seg((der.x + f.x) / 2, der.y, f.y, Math.max(rayon(n - 1), 1.6));
@@ -96,7 +102,7 @@ export default function BloodRiver() {
           }
         }
         const { gl, U } = c;
-        gl.uniform2f(U("u_res"), M, H); gl.uniform1f(U("u_dpr"), dpr); gl.uniform1f(U("u_t"), 0);
+        gl.uniform2f(U("u_res"), M, H); gl.uniform1f(U("u_dpr"), dpr); gl.uniform1f(U("u_t"), temps);
         gl.uniform1i(U("u_ns"), ns); gl.uniform1i(U("u_nb"), nb);
         gl.uniform4fv(U("u_seg"), c.seg); gl.uniform3fv(U("u_ball"), c.ball);
         gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
@@ -115,7 +121,7 @@ export default function BloodRiver() {
       // Image fixe : un filet immobile par côté.
       for (const c of cotes) {
         const f = nouveau(H * .42);
-        f.pts = Array.from({ length: K }, (_, i) => ({ x: f.x0, y: H * .42 - (K - 1 - i) * PAS * 2, age: 0 }));
+        f.pts = Array.from({ length: K }, (_, i) => ({ x: f.x0, y: H * .42 - (K - 1 - i) * PAS * 2, age: 0, w: i % 3 ? 1 : 1.3, perle: i === Math.floor(K / 2) }));
         c.filets = [f];
       }
       rendu();
@@ -128,7 +134,7 @@ export default function BloodRiver() {
       if (perdu || document.hidden) return;
       if (window.innerWidth < 640 && now - last < 32) { raf = requestAnimationFrame(frame); return; } // ~30 fps sur téléphone
       const dt = last ? Math.min((now - last) / 1000, .05) : 0;
-      last = now;
+      last = now; temps += dt;
       pas(dt); rendu();
       raf = requestAnimationFrame(frame);
     };
