@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, WHATSAPP_AFFICHE, waLien } from "@/lib/masques";
 import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
+import Bouton4Trous from "@/components/ui/Bouton4Trous";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -61,14 +62,14 @@ export default function Contact() {
     <section ref={scope} id="reserver" aria-labelledby="reserver-titre" className="wrap relative py-[var(--section-y)] text-ink">
       <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-6">
-          <h2 id="reserver-titre" data-entree className="font-display font-light uppercase leading-[0.98] tracking-[-0.01em] text-[length:var(--step-head)]">
+          <h2 id="reserver-titre" data-entree className="font-display uppercase leading-[1] text-accent text-[length:var(--step-head)]">
             Réserve-le<br />avant samedi
           </h2>
 
           <ol className="mt-7 grid gap-4 md:mt-10">
             {ETAPES.map((e, k) => (
-              <li key={e} data-entree className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-baseline gap-3 text-[length:var(--step-body)]">
-                <span aria-hidden="true" className="font-display text-[length:var(--step-lead)] font-light leading-none text-accent">{k + 1}</span>
+              <li key={e} data-entree className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-3 text-[length:var(--step-body)]">
+                <span aria-hidden="true" className="relative grid h-8 w-8 place-items-center"><Bouton4Trous size={32} className="absolute inset-0" /><span className="relative rounded-full bg-[#131212] px-1 font-display text-[length:var(--step-small)] leading-none text-accent">{k + 1}</span></span>
                 <span>{e}</span>
               </li>
             ))}
@@ -82,13 +83,13 @@ export default function Contact() {
         {/* Vitrine : un masque à la fois, en vraies couleurs */}
         <figure data-entree className="mx-auto w-full max-w-[400px] lg:col-span-5 lg:col-start-8">
           <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="group block">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-surface transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] group-hover:scale-[1.02]">
+            <div className="relative aspect-[4/5] overflow-hidden bg-surface outline outline-1 outline-offset-[6px] outline-accent transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] group-hover:scale-[1.02]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={m.img} alt={m.nom} width={480} height={600} loading="lazy"
                 decoding="async" className="vt-img h-full w-full bg-white object-cover [image-rendering:auto]" />
             </div>
             <figcaption className="mt-4 flex items-baseline justify-between gap-4 text-[length:var(--step-body)]" aria-live="polite">
-              <span><span className="font-display text-accent">N°{m.num}</span> <span className="font-medium">{m.nom}</span></span>
+              <span className="flex items-center gap-2"><Bouton4Trous size={22} /><span className="font-display text-accent">N°{m.num}</span> <span className="font-medium">{m.nom}</span></span>
               <span className="text-[length:var(--step-small)] text-muted">{m.prix}</span>
             </figcaption>
           </a>

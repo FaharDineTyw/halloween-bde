@@ -35,7 +35,7 @@
   --color-ember: var(--ember);
   --color-accent: var(--accent);
   --color-accent-deep: var(--accent-deep);
-  --font-display: var(--font-zodiak);
+  --font-display: var(--font-affiche);
   --font-sans: var(--font-hanken);
 }
 
@@ -59,7 +59,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.font-display { font-family: var(--font-zodiak), Georgia, serif; letter-spacing: -0.01em; line-height: 1; }
+.font-display { font-family: var(--font-affiche), Georgia, serif; letter-spacing: 0; line-height: 1; }
+/* Lettrage de l'affiche (titre HALLOWEEN) : haut et serré comme sur l'affiche. */
+.font-lettrage { font-family: var(--font-lettrage), Georgia, serif; line-height: .85; }
 .wrap { padding-inline: var(--margin); }
 
 ::selection { background: var(--accent); color: var(--accent-ink); }
@@ -71,7 +73,7 @@ body {
   display: inline-flex; align-items: center; justify-content: center; gap: .6em;
   min-height: 52px; padding: 0 1.5em;
   background: var(--accent); color: var(--accent-ink);
-  font-family: var(--font-zodiak), Georgia, serif; font-weight: 400;
+  font-family: var(--font-affiche), Georgia, serif; font-weight: 400;
   font-size: var(--step-body); text-transform: uppercase; letter-spacing: .03em; line-height: 1;
   border-radius: 999px; text-decoration: none; /* forme ronde, comme les coulures */
   transition: background-color .2s ease, transform .16s var(--ease-out);

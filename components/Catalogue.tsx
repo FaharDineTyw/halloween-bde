@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, STYLES, waLien, type Style } from "@/lib/masques";
 import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
+import Bouton4Trous from "@/components/ui/Bouton4Trous";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, Flip);
 
@@ -101,7 +102,7 @@ export default function Catalogue() {
 
   return (
     <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-ink py-[var(--section-y)] text-bg">
-      <h2 id="masques-titre" className="font-display font-light uppercase leading-[0.98] text-[6.9vw] md:text-[length:var(--step-head)]">
+      <h2 id="masques-titre" className="font-display uppercase leading-[1] text-[6.2vw] text-bg md:text-[length:var(--step-head)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
       </h2>
@@ -145,7 +146,7 @@ export default function Catalogue() {
             </button>
             <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <div className="min-w-0">
-                <span className="font-display text-[length:var(--step-small)] text-accent-deep">N°{x.num}</span>
+                <span className="flex items-center gap-1.5 font-display text-[length:var(--step-small)] text-accent-deep"><Bouton4Trous size={18} />N°{x.num}</span>
                 <p className="line-clamp-2 text-[length:var(--step-body)] font-medium leading-snug">{x.nom}</p>
                 <p className="text-[length:var(--step-small)] text-[#5b5758]">{x.prix}</p>
               </div>
@@ -181,7 +182,7 @@ export default function Catalogue() {
           </div>
           <div className="grid gap-4 p-5">
             <div>
-              <span className="font-display text-[length:var(--step-small)] text-accent">N°{m.num}</span>
+              <span className="flex items-center gap-1.5 font-display text-[length:var(--step-small)] text-accent"><Bouton4Trous size={18} />N°{m.num}</span>
               <p id="cat-v-titre" className="text-[length:var(--step-lead)] font-medium">{m.nom}</p>
               <p className="text-[length:var(--step-small)] text-muted">{m.prix}</p>
             </div>

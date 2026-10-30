@@ -1,6 +1,5 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Showcase from "@/components/Showcase";
 import Catalogue from "@/components/Catalogue";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -18,7 +17,6 @@ export default function Page() {
         <Header />
         <main id="haut" className="relative">
           <Hero />
-          <Showcase />
           <Catalogue />
           <Contact />
         </main>

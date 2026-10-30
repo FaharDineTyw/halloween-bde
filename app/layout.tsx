@@ -1,17 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
-import { Hanken_Grotesk } from "next/font/google";
+import { Abril_Fatface, Hanken_Grotesk, Metal_Mania } from "next/font/google";
 import "./globals.css";
 
-const zodiak = localFont({
-  src: [
-    { path: "./fonts/zodiak-100.woff2", weight: "100" },
-    { path: "./fonts/zodiak-300.woff2", weight: "300" },
-    { path: "./fonts/zodiak-400.woff2", weight: "400" },
-  ],
-  variable: "--font-zodiak",
-  display: "swap",
-});
+// Typographies relevées sur l'affiche : Metal Mania pour le lettrage HALLOWEEN,
+// Abril Fatface pour les infos (« EYA CENTRE », « 31 oct »), Hanken Grotesk pour le texte courant.
+const affiche = Abril_Fatface({ subsets: ["latin"], weight: "400", variable: "--font-affiche", display: "swap" });
+const lettrage = Metal_Mania({ subsets: ["latin"], weight: "400", variable: "--font-lettrage", display: "swap" });
 const hanken = Hanken_Grotesk({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-hanken", display: "swap" });
 
 export const metadata: Metadata = {
@@ -38,7 +32,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${zodiak.variable} ${hanken.variable}`}>
+    <html lang="fr" className={`${affiche.variable} ${lettrage.variable} ${hanken.variable}`}>
       <body>
         {children}
       </body>

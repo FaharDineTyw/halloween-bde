@@ -32,9 +32,9 @@ export default function Footer() {
         <SangGL flaque coulees className="absolute inset-x-0 top-0 h-[calc(100%+3rem)] md:h-[calc(100%+4.25rem)]" />
         <div aria-hidden="true" className="h-[136px]" />
         <div className="wrap relative z-10 pt-10 md:pt-16">
-          <h2 className="text-center font-display font-light uppercase leading-[0.95] text-[length:var(--step-display)]">
+          <h2 className="text-center font-display uppercase leading-[0.95] text-[length:var(--step-display)]">
             <span className="block overflow-hidden"><span className="f-ligne block">À samedi,</span></span>
-            <span className="block overflow-hidden"><span className="f-ligne gresille block">si tu oses.</span></span>
+            <span className="block overflow-hidden"><span className="f-ligne gresille block font-lettrage normal-case text-accent text-[1.15em]">si tu oses.</span></span>
           </h2>
         </div>
       </div>
@@ -46,7 +46,7 @@ export default function Footer() {
           <img src="/assets/logo-bde.svg" alt="Bureau des Étudiants Epitech Bénin" width={76} height={48} loading="lazy" className="h-10 w-auto md:h-12" />
           <nav aria-label="Pied de page" className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-[length:var(--step-body)]">
             <a href="#masques" className={lien}>Les masques</a>
-            <a href="#soiree" className={lien}>La soirée</a>
+            <a href="#haut" className={lien}>La soirée</a>
             <a href="#reserver" className={lien}>Réserver</a>
           </nav>
           <div className="flex flex-col items-center gap-2 text-[length:var(--step-small)]">

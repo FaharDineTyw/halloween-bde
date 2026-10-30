@@ -1,135 +1,160 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { MASQUES, waLien } from "@/lib/masques";
 import SangGL from "@/components/hero/SangGL";
 import IconeWhatsApp from "@/components/ui/IconeWhatsApp";
+import Spirale from "@/components/affiche/Spirale";
+import { Cle, Epingle, Fantome, MASQUE_PORTE, Porte } from "@/components/affiche/Dessins";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-// Flèches du sélecteur : cible tactile de 44px.
-const fleche = "grid h-11 w-11 shrink-0 place-items-center text-muted transition-colors hover:text-accent active:scale-95";
-
-const DEPART = 6; // masque N°07
-const PAS = 7;
-// 7 et 23 premiers entre eux : on passe par les 23 masques dans un ordre mélangé
-
+// Le hero EST l'affiche : lettrage HALLOWEEN, clé-bouton qui pend, infos aux coins.
+// Au défilement, la clé descend dans la serrure, tourne, et la petite porte s'ouvre sur « l'autre côté »
+// (la couleur claire du catalogue qui suit), comme dans Coraline.
 export default function Hero() {
-  const root = useRef<HTMLElement>(null);
-  const lampe = useRef<HTMLDivElement>(null);
-  const premier = useRef(true);
-  const [i, setI] = useState(DEPART);
-  const m = MASQUES[i];
+  const scene = useRef<HTMLElement>(null);
 
-  const suivant = () => setI((n) => (n + PAS) % MASQUES.length);
-  const precedent = () => setI((n) => (n - PAS + MASQUES.length) % MASQUES.length);
-
-  // Séquence d'arrivée + lampe torche qui suit le pointeur.
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.timeline({ defaults: { ease: "power3.out" } })
-          .from(".h-ligne", { y: 24, autoAlpha: 0, duration: 0.8, stagger: 0.12 })
-          .from(".h-fente", { clipPath: "inset(0 100% 0 0)", duration: 1.1, ease: "power4.inOut" }, "-=0.4")
-          .from(".h-fente img", { scale: 1.12, duration: 1.1 }, "<")
-          .from(".h-suite", { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, "-=0.5");
-        // Boucles infinies, mises en pause quand le hero sort de l'écran.
-        const boucles: gsap.core.Animation[] = [];
-        // Le visage géant respire très lentement.
-        boucles.push(gsap.fromTo(".h-spectre img", { scale: 1.08 }, { scale: 1, duration: 8, ease: "sine.inOut", repeat: -1, yoyo: true }));
-        ScrollTrigger.create({
-          trigger: root.current, start: "top bottom", end: "bottom top",
-          onToggle: (st) => boucles.forEach((b) => (st.isActive ? b.resume() : b.pause())),
-        });
-      });
-      mm.add("(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)", () => {
-        const el = lampe.current!;
-        gsap.set(el, { autoAlpha: 1 });
-        const xTo = gsap.quickTo(el, "--x", { duration: 0.5, ease: "power3", unit: "px" });
-        const yTo = gsap.quickTo(el, "--y", { duration: 0.5, ease: "power3", unit: "px" });
-        const bouge = (e: PointerEvent) => {
-          const r = root.current!.getBoundingClientRect();
-          xTo(e.clientX - r.left);
-          yTo(e.clientY - r.top);
-        };
-        root.current!.addEventListener("pointermove", bouge);
-        return () => root.current?.removeEventListener("pointermove", bouge);
-      });
+      mm.add(
+        { anime: "(prefers-reduced-motion: no-preference)", souris: "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)" },
+        (mc) => {
+          const { anime, souris } = mc.conditions as { anime: boolean; souris: boolean };
+          if (!anime) return;
+          const stage = scene.current!;
+          const voyage = stage.querySelector<HTMLElement>(".a-voyage")!;
+          const autre = stage.querySelector<HTMLElement>(".a-autre")!;
+
+          // Arrivée : un seul moment orchestré.
+          gsap.timeline({ defaults: { ease: "power3.out" } })
+            .from(".a-lettrage", { yPercent: -18, autoAlpha: 0, duration: 1 })
+            .from(".a-penche", { y: -140, duration: 1.6, ease: "elastic.out(1, 0.45)" }, "-=0.6")
+            .from(".a-info", { y: 16, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, "-=1.1");
+
+          // Boucles : la clé se balance, le fantôme cligne. En pause hors écran.
+          const boucles = [
+            gsap.fromTo(".a-balance", { rotation: -4 }, { rotation: 4, duration: 2.2, ease: "sine.inOut", yoyo: true, repeat: -1, transformOrigin: "50% 0%" }),
+            gsap.timeline({ repeat: -1, repeatDelay: 3.2 })
+              .to(".fantome-yeux", { scaleY: 0.1, transformOrigin: "50% 50%", duration: 0.08, ease: "power2.out" })
+              .to(".fantome-yeux", { scaleY: 1, duration: 0.14, ease: "power2.out" })
+              .to(".a-fantome", { rotation: 5, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 1 }, "<"),
+          ];
+          ScrollTrigger.create({
+            trigger: stage, start: "top bottom", end: "bottom top",
+            onToggle: (st) => boucles.forEach((b) => (st.isActive ? b.resume() : b.pause())),
+          });
+
+          // La clé penche vers le pointeur (souris seulement).
+          let quitte = () => {};
+          if (souris) {
+            const penche = gsap.quickTo(".a-penche", "rotation", { duration: 0.8, ease: "power3" });
+            const bouge = (e: PointerEvent) => penche((e.clientX / innerWidth - 0.5) * 10);
+            window.addEventListener("pointermove", bouge, { passive: true });
+            quitte = () => window.removeEventListener("pointermove", bouge);
+          }
+
+          // Scène épinglée : la clé descend au centre de la porte, tourne (petit « clic »), la porte s'ouvre.
+          gsap.set(autre, { "--porte": 0 });
+          gsap.set(".a-porte", { scale: 0.9 });
+          gsap.timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: { trigger: stage, start: "top top", end: "+=150%", pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true },
+          })
+            .to(voyage, { y: () => stage.clientHeight * 0.55 - (voyage.offsetTop + voyage.offsetHeight / 2), scale: 0.78, duration: 0.35, ease: "power2.inOut" })
+            .to(".a-porte", { autoAlpha: 1, scale: 1, duration: 0.15, ease: "power2.out" }, 0.25)
+            .to(voyage, { rotationY: 82, transformPerspective: 700, duration: 0.12, ease: "power2.in" }, 0.38)
+            .to(voyage, { rotationY: 72, duration: 0.05, ease: "power2.out" }, 0.5)
+            .to(autre, { "--porte": 900, duration: 0.45, ease: "power3.in" }, 0.55)
+            .to([".a-porte", voyage], { autoAlpha: 0, duration: 0.1 }, 0.62);
+
+          return () => quitte();
+        },
+      );
     },
-    { scope: root },
+    { scope: scene },
   );
 
-  // Obturateur à chaque changement de masque (pas au premier rendu : la séquence d'arrivée s'en charge).
-  useGSAP(
-    () => {
-      if (premier.current) { premier.current = false; return; }
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      gsap.fromTo(".h-fente, .h-spectre", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.38, ease: "expo.out", stagger: 0.06 });
-      gsap.fromTo(".h-fente img", { scale: 1.08 }, { scale: 1, duration: 0.38, ease: "expo.out" });
-    },
-    { scope: root, dependencies: [i] },
-  );
+  const info = "a-info font-display uppercase leading-[0.95] text-accent";
 
   return (
-    <section ref={root} aria-labelledby="hero-titre" className="wrap relative flex min-h-svh flex-col justify-end overflow-hidden pt-32 pb-12 md:pb-16">
-      <div
-        ref={lampe}
-        aria-hidden="true"
-        className="pointer-events-none invisible absolute inset-0 z-0"
-        style={{ /* taste-skill-ignore: lampe torche */ background: "radial-gradient(circle 32vmax at var(--x, 50%) var(--y, 40%), rgba(243,83,13,.14), transparent 70%)" }}
-      />
-
-      {/* Sang qui suinte du bord haut (WebGL). */}
+    <section ref={scene} aria-labelledby="hero-titre" className="relative h-svh min-h-[560px] overflow-hidden">
+      <Spirale />
       <SangGL />
       <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[1] block h-1 bg-blood-deep" />
 
-      {/* Le visage choisi, en géant, au-dessus du titre : il occupe l'espace libre, jamais le texte. */}
-      <div aria-hidden="true" className="h-spectre duo relative z-0 mb-8 min-h-[18svh] flex-1 overflow-hidden opacity-40 md:-mr-[var(--margin)] md:ml-[38%]" data-vrai={false}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={m.img} alt="" width={480} height={480} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: "50% 38%" }} />
-      </div>
-
-      <h1 id="hero-titre" className="font-display relative z-10 font-light uppercase text-[length:var(--step-display)]" style={{ lineHeight: 0.95 }}>
-        <span className="h-ligne block"><span className="gresille">Le 31 octobre,</span></span>
-        <span className="h-ligne block whitespace-nowrap">
-          <span className="gresille">tu seras</span>{" "}
-          <button
-            type="button"
-            onClick={suivant}
-            aria-label={`Changer de masque, actuellement N°${m.num} ${m.nom}`}
-            className="h-fente duo relative inline-block cursor-pointer overflow-hidden align-baseline"
-            style={{ width: "2.6em", height: "0.78em", willChange: "clip-path" }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={m.img} alt={m.nom} width={480} height={480} className="h-full w-full object-cover" style={{ objectPosition: "50% 35%" }} />
-          </button>
+      {/* Lettrage de l'affiche : le O est le fantôme aux yeux-boutons. */}
+      <h1
+        id="hero-titre"
+        aria-label="Halloween, soirée du BDE Epitech Bénin"
+        className="wrap absolute inset-x-0 top-[84px] z-10 text-center text-[clamp(3rem,17vw,26svh)] md:top-[96px]"
+      >
+        <span
+          className="a-lettrage font-lettrage inline-block origin-top whitespace-nowrap text-accent"
+          style={{ transform: "scaleY(1.25)" }}
+        >
+          HALL<Fantome className="a-fantome mx-[0.03em] inline-block h-[0.74em] w-auto align-baseline" />WEEN
         </span>
       </h1>
 
-      <div className="relative z-10 mt-7 grid gap-6 md:mt-10 md:grid-cols-12 md:items-end">
-        <p className="h-suite max-w-[34ch] text-[length:var(--step-lead)] leading-[1.4] md:col-span-6">
-          Soirée Halloween du BDE Epitech Bénin, samedi 31 octobre dès 19h à l&apos;EYA Centre.
-        </p>
-
-        <div className="h-suite flex flex-col gap-4 md:col-span-6 md:col-start-7 md:items-end">
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={precedent} aria-label="Masque précédent" className={fleche}>
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
-            </button>
-            <p aria-live="polite" className="text-[length:var(--step-body)]">
-              N°{m.num} {m.nom}
-            </p>
-            <button type="button" onClick={suivant} aria-label="Masque suivant" className={fleche}>
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
-            </button>
+      {/* La clé qui pend : voyage (défilement) > penche (pointeur) > balance (pendule). */}
+      <div className="a-voyage absolute left-1/2 top-[38svh] z-20 -translate-x-1/2 md:top-[40svh]" style={{ transformStyle: "preserve-3d" }}>
+        <div className="a-penche origin-top">
+          <div className="a-balance origin-top">
+            <Cle className="h-[26svh] w-auto md:h-[30svh]" />
           </div>
-          <a href={waLien(m)} target="_blank" rel="noopener" aria-label={`Réserver le masque N°${m.num}, ${m.nom}, sur WhatsApp`} className="btn w-full md:w-auto">
-            <IconeWhatsApp />Réserver le n°{m.num}
+        </div>
+      </div>
+
+      {/* Petite porte, au centre, révélée quand la clé arrive. */}
+      <Porte className="a-porte pointer-events-none invisible absolute left-1/2 top-[55%] z-10 h-auto w-[28vmin] -translate-x-1/2 -translate-y-1/2 opacity-0" />
+
+      {/* Infos posées comme sur l'affiche. */}
+      <p className={`${info} absolute left-[var(--margin)] top-[50%] z-10 text-[clamp(15px,2.2vw,34px)]`}>
+        Portez vos<br />déguisements
+      </p>
+      <p className={`${info} absolute right-[var(--margin)] top-[50%] z-10 text-right text-[clamp(15px,2.2vw,34px)]`}>
+        <Epingle className="mb-1 ml-auto inline-block h-[1em] w-[1em] align-[-0.1em]" /> EYA<br />Centre
+      </p>
+
+      <div className="wrap absolute inset-x-0 bottom-6 z-10 grid items-end gap-5 md:bottom-10 md:grid-cols-2">
+        <div className="a-info order-2 flex flex-col items-start gap-4 md:order-1">
+          <p className="max-w-[26ch] text-[length:var(--step-body)] text-ink">La soirée Halloween du BDE Epitech Bénin.</p>
+          <a href={waLien()} target="_blank" rel="noopener" className="btn w-full md:w-auto">
+            <IconeWhatsApp />Réserver un masque
           </a>
+        </div>
+        <p className={`${info} order-1 text-right md:order-2`}>
+          <span className="block text-[clamp(14px,1.6vw,24px)]">À partir de 19h</span>
+          <span className="block normal-case text-[clamp(4rem,13vw,24svh)] leading-[0.8]">31 oct</span>
+        </p>
+      </div>
+
+      {/* « L'autre côté » : la porte s'ouvre sur la couleur claire du catalogue qui suit. */}
+      <div
+        aria-hidden="true"
+        className="a-autre pointer-events-none absolute inset-0 z-30 grid place-items-center bg-ink"
+        style={{
+          WebkitMaskImage: MASQUE_PORTE, maskImage: MASQUE_PORTE,
+          WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+          WebkitMaskPosition: "50% 55%", maskPosition: "50% 55%",
+          WebkitMaskSize: "calc(var(--porte, 0) * 1vmax) auto", maskSize: "calc(var(--porte, 0) * 1vmax) auto",
+        }}
+      >
+        <div className="flex flex-col items-center gap-[4vmin]">
+          <p className="font-display text-[length:var(--step-head)] text-bg">De l&apos;autre côté…</p>
+          {/* Ce qu'on découvre en ouvrant la porte : les masques. */}
+          <div className="flex gap-[2vmin]">
+            {[0, 6, 10, 17, 3].map((k) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={k} src={MASQUES[k].img} alt="" width={480} height={480} loading="lazy" decoding="async"
+                className="h-[24vmin] w-[18vmin] rounded-[4px] bg-white object-cover" />
+            ))}
+          </div>
         </div>
       </div>
     </section>
