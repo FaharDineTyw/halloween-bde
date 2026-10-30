@@ -101,7 +101,7 @@ export default function Catalogue() {
   const depart = useRef(0);
 
   return (
-    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-ink pt-[calc(var(--section-y)*.35)] pb-[calc(var(--section-y)*.8)] text-bg">
+    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-ink py-[var(--section-y)] text-bg">
       <h2 id="masques-titre" className="font-display uppercase leading-[1] text-[6.2vw] text-bg md:text-[length:var(--step-head)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
@@ -123,14 +123,14 @@ export default function Catalogue() {
         <span ref={barre} aria-hidden="true" className="absolute bottom-0 left-0 h-px w-0 bg-accent" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
       </div>
 
-      <ul className="mt-7 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-10 md:grid-cols-3 md:gap-x-8 md:gap-y-14">
+      <ul className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
         {MASQUES.map((x, i) => (
           <li key={x.num} data-num={x.num} data-style={x.style} className="cat-carte group">
             <button
               type="button"
               onClick={(e) => ouvre(i, e.currentTarget)}
               aria-label={`Agrandir le masque N°${x.num}, ${x.nom}`}
-              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-ink transition-transform duration-[120ms] ease-out active:scale-[.98]"
+              className="relative block aspect-[4/5] w-full cursor-zoom-in touch-manipulation overflow-hidden rounded-[4px] bg-white transition-transform duration-[120ms] ease-out active:scale-[.98]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -140,7 +140,7 @@ export default function Catalogue() {
                 height={480}
                 loading={i < 4 ? "eager" : "lazy"}
                 decoding="async"
-                className="h-full w-full object-cover [image-rendering:auto] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04] mix-blend-multiply"
+                className="h-full w-full object-cover [image-rendering:auto] transition-transform duration-[400ms] ease-[cubic-bezier(.23,1,.32,1)] [@media(pointer:fine)]:group-hover:scale-[1.04]"
               />
               <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-500 [@media(pointer:fine)]:group-hover:scale-x-100" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
             </button>
