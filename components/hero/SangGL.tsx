@@ -15,8 +15,8 @@ const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const lisse = (p: number) => p * p * (3 - 2 * p);
 
 // flaque : les gouttes tombent jusqu'en bas et nourrissent une flaque. className remplace le placement du canvas.
-// coulees : pas de bande en haut, des filets continus entrent par le bord haut (le sang descendu de la page).
-export default function SangGL({ className, flaque = false, coulees = false }: { className?: string; flaque?: boolean; coulees?: boolean }) {
+// seulFlaque (pied de page) : ni bande ni coulures, seulement la flaque où se déversent les filets des bords.
+export default function SangGL({ className, flaque = false, seulFlaque = false }: { className?: string; flaque?: boolean; seulFlaque?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
     const { N, U } = ps;
     const uRes = U("u_res"), uDpr = U("u_dpr"), uT = U("u_t"), uNs = U("u_ns"), uNb = U("u_nb"), uSeg = U("u_seg"), uBall = U("u_ball"), uPy = U("u_py"), uPool = U("u_pool");
     const seg = new Float32Array(N * 4), ball = new Float32Array(N * 3), pool = new Float32Array(8 * 3);
-    gl.uniform1f(U("u_noband"), coulees ? 1 : 0);
+    gl.uniform1f(U("u_noband"), seulFlaque ? 1 : 0);
 
     const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let W = 0, H = 0, dpr = 1, drips: Drip[] = [], drops: Drop[] = [], bosses: Bosse[] = [], nappes: Nappe[] = [], py = 0, hMax = 0, wMax = 0;
@@ -46,8 +46,8 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
     };
 
     const nouvelleCoulee = (d: Drip, premiere = false) => {
-      d.Lmax = coulees ? Math.min(H * .9, d.Lmin + rnd(H * .06, H * .14)) : rnd(H * .16, H * .42); d.rMax = rnd(d.w * 2, d.w * 2.8);
-      d.phase = 0; d.t = 0; d.dur = coulees ? rnd(2, 4) : rnd(1.8, 3.6);
+      d.Lmax = rnd(H * .16, H * .42); d.rMax = rnd(d.w * 2, d.w * 2.8);
+      d.phase = 0; d.t = 0; d.dur = rnd(1.8, 3.6);
       if (premiere) { d.phase = 3; d.dur = rnd(0, 1.2); }
     };
     const taille = () => {
@@ -55,17 +55,17 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
       dpr = Math.min(window.devicePixelRatio || 1, W < 640 ? 1 : 1.5);
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       gl.viewport(0, 0, cv.width, cv.height);
-      const n = coulees ? (W < 640 ? 4 : 5) : W < 640 ? 6 : 8;
+      const n = seulFlaque ? 0 : W < 640 ? 6 : 8;
       // Espacement irrégulier : des écarts tirés au hasard (certains serrés, d'autres larges), puis remis à l'échelle.
       const ecarts = Array.from({ length: n + 1 }, () => (Math.random() < .3 ? rnd(.25, .5) : rnd(.8, 1.7)));
       const somme = ecarts.reduce((a, b) => a + b, 0);
       let cumul = 0;
       drips = Array.from({ length: n }, (_, k) => {
         cumul += ecarts[k];
-        const w = coulees ? rnd(6, 10) : Math.random() < .25 ? rnd(6.5, 9) : rnd(3, 6);
-        const d: Drip = { x: (cumul / somme) * W, w, L: 0, Lmin: coulees ? rnd(H * .55, H * .78) : rnd(H * .04, H * .12), Lmax: 0, r: 0, rMin: w * 1.35, rMax: 0, phase: 3, t: 0, dur: 0, fil: 0, finFil: 0 };
+        const w = Math.random() < .25 ? rnd(6.5, 9) : rnd(3, 6);
+        const d: Drip = { x: (cumul / somme) * W, w, L: 0, Lmin: rnd(H * .04, H * .12), Lmax: 0, r: 0, rMin: w * 1.35, rMax: 0, phase: 3, t: 0, dur: 0, fil: 0, finFil: 0 };
         d.L = d.Lmin; d.r = d.rMin; nouvelleCoulee(d, true);
-        if (reduit) { d.L = coulees ? rnd(H * .6, H * .85) : rnd(H * .08, H * .22); d.r = d.w * 2.4; }
+        if (reduit) { d.L = rnd(H * .08, H * .22); d.r = d.w * 2.4; }
         return d;
       });
       drops = []; bosses = [];
@@ -73,10 +73,17 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
       nappes = flaque ? [] : Array.from({ length: 2 }, () => ({ x: rnd(.1, .9) * W, r: 0, t: rnd(0, 8), dur: rnd(9, 14) }));
       py = flaque ? H - 10 : 0; hMax = W < 640 ? 14 : 22; wMax = W * .12;
       // La flaque existe déjà un peu au départ, puis grossit avec chaque goutte.
-      if (flaque) bosses = drips.slice(0, 8).map((d) => ({ x: d.x, h: reduit ? 10 : 5, ht: reduit ? 10 : 5, w: W * .07 }));
+      if (flaque) bosses = seulFlaque
+        ? Array.from({ length: 8 }, (_, k) => ({ x: ((k + .5) / 8) * W, h: reduit ? 10 : 6, ht: reduit ? 10 : 6, w: W * .09 }))
+        : drips.slice(0, 8).map((d) => ({ x: d.x, h: reduit ? 10 : 5, ht: reduit ? 10 : 5, w: W * .07 }));
     };
 
+    let eclat = rnd(1, 2.5); // seulFlaque : le sang des bords se déverse dans la flaque, aux deux extrémités
     const pas = (dt: number) => {
+      if (seulFlaque) {
+        eclat -= dt;
+        if (eclat <= 0) { eclat = rnd(1.5, 3); impact({ x: (Math.random() < .5 ? rnd(.01, .05) : rnd(.95, .99)) * W, y: py, v: 300, r: rnd(2.5, 4) }); }
+      }
       for (const d of drips) {
         d.t += dt;
         const p = Math.min(d.t / d.dur, 1);
@@ -116,8 +123,6 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
       for (const q of nappes) addBall(q.x, 2, q.r);
       for (const d of drips) {
         addSeg(d.x, 0, d.L, d.w);
-        // Filet continu : un renflement descend lentement le long du filet (le sang s'écoule).
-        if (coulees && d.L > 20) addBall(d.x, (t * 45 + d.x * 7) % d.L, d.w * 1.3);
         if (d.phase === 1) { // perle en larme retenue par un fil fin
           const s = Math.min(d.t / d.dur, 1);
           addSeg(d.x, d.L, d.L + d.fil, d.w * .25 * (1 - .4 * s));
@@ -182,12 +187,12 @@ export default function SangGL({ className, flaque = false, coulees = false }: {
       window.removeEventListener("resize", onResize);
       cv.removeEventListener("webglcontextlost", onLost);
     };
-  }, [flaque, coulees]);
+  }, [flaque, seulFlaque]);
 
   return (
     <>
       {/* Bande de secours si WebGL est indisponible (recouverte par le rendu sinon). */}
-      {!coulees && <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[1] block h-2 bg-blood" />}
+      {!seulFlaque && <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[1] block h-2 bg-blood" />}
       <canvas ref={ref} aria-hidden="true" className={`pointer-events-none z-[1] block w-full ${className ?? "absolute inset-x-0 top-0 h-[70svh]"}`} />
     </>
   );

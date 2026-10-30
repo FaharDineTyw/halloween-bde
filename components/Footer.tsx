@@ -27,16 +27,17 @@ export default function Footer() {
 
   return (
     <footer ref={root} className="relative text-ink">
-      {/* Le sang descendu de la page entre par le haut en filets et fait une flaque sous le titre (derrière le texte). */}
+      {/* Le sang descendu le long des bords de la page se déverse dans une flaque sous le titre (derrière le texte). */}
       <div className="relative">
-        <SangGL flaque coulees className="absolute inset-x-0 top-0 h-[calc(100%+3rem)] md:h-[calc(100%+4.25rem)]" />
-        <div aria-hidden="true" className="h-[136px]" />
-        <div className="wrap relative z-10 pt-10 md:pt-16">
+        {/* Canvas calé sur le bas du bloc : la ligne de flaque (10 px au-dessus de son bord bas) tombe sur [data-flaque]. */}
+        <SangGL flaque seulFlaque className="absolute inset-x-0 -bottom-[10px] h-28" />
+        <div className="wrap relative z-10 pb-10 pt-[var(--section-y)] md:pb-14">
           <h2 className="text-center font-display uppercase leading-[0.95] text-[length:var(--step-display)]">
             <span className="block overflow-hidden"><span className="f-ligne block">À samedi,</span></span>
             <span className="block overflow-hidden"><span className="f-ligne gresille block font-lettrage normal-case text-accent text-[1.15em]">si tu oses.</span></span>
           </h2>
         </div>
+        <div data-flaque aria-hidden="true" className="h-0" />
       </div>
 
       <div className="wrap relative z-10 pb-10">
