@@ -1,7 +1,7 @@
 // Test des filtres du catalogue (bug réel : un filtre faisait planter la page).
 // Prérequis : site servi sur $URL (défaut http://localhost:8731) et le skill design-taste-frontend installé.
 // Usage : node tests/filtres.mjs
-import { Browser } from `${process.env.HOME}/.claude/skills/design-taste-frontend/scripts/lib/cdp.mjs`;
+const { Browser } = await import(`${process.env.HOME}/.claude/skills/design-taste-frontend/scripts/lib/cdp.mjs`);
 const URL = process.env.URL || "http://localhost:8731/";
 const b = await Browser.launch();
 const p = await b.newPage({ width: 1440, height: 900, dsf: 1 });
