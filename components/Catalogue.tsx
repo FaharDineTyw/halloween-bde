@@ -101,8 +101,8 @@ export default function Catalogue() {
   const depart = useRef(0);
 
   return (
-    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-ink py-[var(--section-y)] text-bg">
-      <h2 id="masques-titre" className="font-display uppercase leading-[1] text-[6.2vw] text-bg md:text-[length:var(--step-head)]">
+    <section ref={scope} id="masques" aria-labelledby="masques-titre" className="wrap relative bg-bg py-[var(--section-y)] text-ink">
+      <h2 id="masques-titre" className="font-display uppercase leading-[1] text-[6.2vw] text-ink md:text-[length:var(--step-head)]">
         <span className="block">Vingt-trois masques,</span>
         <span className="block">pas un de plus</span>
       </h2>
@@ -115,7 +115,7 @@ export default function Catalogue() {
             data-filtre={f.id}
             aria-pressed={filtre === f.id}
             onClick={(e) => filtrer(f.id, e.currentTarget)}
-            className="inline-flex min-h-11 items-end text-[#5b5758] transition-colors duration-200 hover:text-bg aria-pressed:text-accent-deep"
+            className="inline-flex min-h-11 items-end text-muted transition-colors duration-200 hover:text-ink aria-pressed:text-accent"
           >
             {f.nom}
           </button>
@@ -123,7 +123,7 @@ export default function Catalogue() {
         <span ref={barre} aria-hidden="true" className="absolute bottom-0 left-0 h-px w-0 bg-accent" />{/* taste-skill-ignore: demandé (indicateur, vignette, soulignement) */}
       </div>
 
-      <ul className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+      <ul className="mt-7 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-5">
         {MASQUES.map((x, i) => (
           <li key={x.num} data-num={x.num} data-style={x.style} className="cat-carte group">
             <button
@@ -146,16 +146,16 @@ export default function Catalogue() {
             </button>
             <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <div className="min-w-0">
-                <span className="flex items-center gap-1.5 font-display text-[length:var(--step-small)] text-accent-deep"><Bouton4Trous size={18} />N°{x.num}</span>
+                <span className="flex items-center gap-1.5 font-display text-[length:var(--step-small)] text-accent"><Bouton4Trous size={18} />N°{x.num}</span>
                 <p className="line-clamp-2 text-[length:var(--step-body)] font-medium leading-snug">{x.nom}</p>
-                <p className="whitespace-nowrap tabular-nums text-[length:var(--step-small)] text-[#5b5758]">{x.prix}</p>
+                <p className="whitespace-nowrap tabular-nums text-[length:var(--step-small)] text-muted">{x.prix}</p>
               </div>
               <a
                 href={waLien(x)}
                 target="_blank"
                 rel="noopener"
                 aria-label={`Réserver le masque N°${x.num}, ${x.nom}, sur WhatsApp`}
-                className="inline-flex min-h-11 items-center self-start sm:self-auto shrink-0 touch-manipulation underline decoration-transparent decoration-1 underline-offset-[0.25em] text-[length:var(--step-small)] text-accent-deep transition-[text-decoration-color] duration-200 ease-out hover:decoration-current focus-visible:decoration-current"
+                className="inline-flex min-h-11 items-center self-start sm:self-auto shrink-0 touch-manipulation underline decoration-transparent decoration-1 underline-offset-[0.25em] text-[length:var(--step-small)] text-accent transition-[text-decoration-color] duration-200 ease-out hover:decoration-current focus-visible:decoration-current"
               >
                 Réserver
               </a>

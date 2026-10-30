@@ -141,7 +141,7 @@ export default function Hero() {
       {/* « L'autre côté » : la porte s'ouvre sur la couleur claire du catalogue qui suit. */}
       <div
         aria-hidden="true"
-        className="a-autre pointer-events-none absolute inset-0 z-30 grid place-items-center bg-ink"
+        className="a-autre pointer-events-none absolute inset-0 z-30 grid place-items-center bg-bg"
         style={{
           WebkitMaskImage: MASQUE_PORTE, maskImage: MASQUE_PORTE,
           WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
@@ -150,7 +150,7 @@ export default function Hero() {
         }}
       >
         <div className="flex flex-col items-center gap-[4vmin]">
-          <p className="font-display text-[length:var(--step-head)] text-bg">De l&apos;autre côté…</p>
+          <p className="font-display text-[length:var(--step-head)] text-ink">De l&apos;autre côté…</p>
           {/* Ce qu'on découvre en ouvrant la porte : les masques. */}
           <div className="flex gap-[2vmin]">
             {[0, 6, 10, 17, 3].map((k) => (
